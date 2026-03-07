@@ -4,13 +4,27 @@
     "slug": "prayer-room",
     "scheme": "prayerroom",
     "version": "1.0.0",
-    "platforms": ["ios"],
+    "platforms": [
+      "ios"
+    ],
     "icon": "./assets/icon.png",
-    "splash": { "backgroundColor": "#1a1a2e" },
+    "splash": {
+      "backgroundColor": "#1a1a2e"
+    },
     "ios": {
       "bundleIdentifier": "com.prayerroom.app",
       "supportsTablet": false
     },
-    "plugins": ["expo-router", "expo-notifications", "expo-document-picker"]
+    "plugins": [
+      "expo-router",
+      "expo-notifications",
+      "expo-document-picker",
+      "react-native-iap"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "CONFIGURE_ME"
+      }
+    }
   }
 }
