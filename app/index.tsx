@@ -2,6 +2,7 @@ import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { Alarm, Verse } from '../src/types';
 import { getAlarms, saveAlarm } from '../src/storage/alarms';
@@ -15,6 +16,7 @@ import { Spacing, FontSize, BorderRadius } from '../src/constants/theme';
 export default function HomeScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [currentVerse, setCurrentVerse] = useState<Verse | null>(null);
 
@@ -49,7 +51,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.md }]}>
       <Text style={[styles.header, { color: colors.text }]}>Prayer Room</Text>
 
       <VerseCard verse={currentVerse} />
@@ -84,11 +86,14 @@ export default function HomeScreen() {
         />
       )}
 
-      <View style={styles.bottomNav}>
-        <Pressable onPress={() => router.push('/packs')}>
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom + Spacing.sm }]}>
+        <Pressable onPress={() => router.push('/packs')} style={styles.navItem}>
           <Text style={[styles.navText, { color: colors.textSecondary }]}>Versets</Text>
         </Pressable>
-        <Pressable onPress={() => router.push('/settings')}>
+        <Pressable onPress={() => router.push('/alarm/new')} style={[styles.navMainButton, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.navMainText, { color: colors.background }]}>+</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push('/settings')} style={styles.navItem}>
           <Text style={[styles.navText, { color: colors.textSecondary }]}>Reglages</Text>
         </Pressable>
       </View>
@@ -97,7 +102,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: Spacing.xxl },
+  container: { flex: 1 },
   header: { fontSize: FontSize.xxl, fontWeight: '700', paddingHorizontal: Spacing.md, marginBottom: Spacing.md },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.md, marginTop: Spacing.lg, marginBottom: Spacing.sm },
   sectionTitle: { fontSize: FontSize.lg, fontWeight: '600' },
@@ -105,6 +110,9 @@ const styles = StyleSheet.create({
   addButtonText: { fontSize: 24, fontWeight: '700' },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.xl },
   emptyText: { textAlign: 'center', fontSize: FontSize.md, lineHeight: 24 },
-  bottomNav: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: Spacing.md, borderTopWidth: 1, borderTopColor: 'rgba(128,128,128,0.2)' },
+  bottomNav: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingTop: Spacing.sm, borderTopWidth: 1, borderTopColor: 'rgba(128,128,128,0.2)' },
+  navItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.sm },
   navText: { fontSize: FontSize.md, fontWeight: '500' },
+  navMainButton: { width: 56, height: 56, borderRadius: BorderRadius.full, justifyContent: 'center', alignItems: 'center', marginTop: -28 },
+  navMainText: { fontSize: 28, fontWeight: '700' },
 });

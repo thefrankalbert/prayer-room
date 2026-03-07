@@ -1,13 +1,16 @@
-import { Audio } from 'expo-av';
 import { AudioSource } from '../types';
 
-let currentSound: Audio.Sound | null = null;
+// expo-av may not be available in Expo Go (SDK 55+).
+// All functions degrade gracefully when the native module is missing.
+let Audio: any = null;
+try {
+  Audio = require('expo-av').Audio;
+} catch {
+  console.warn('[AudioService] expo-av not available — audio playback disabled');
+}
 
-/**
- * Lazily load builtin audio files. We use a function instead of top-level
- * require() calls so the app does not crash if the MP3 files have not yet
- * been added to assets/audio/.
- */
+let currentSound: any = null;
+
 function getBuiltinAudioFile(trackId: string): any | null {
   try {
     switch (trackId) {
@@ -25,42 +28,49 @@ function getBuiltinAudioFile(trackId: string): any | null {
         return null;
     }
   } catch {
-    console.warn(`[AudioService] Builtin audio file not found for track: ${trackId}`);
     return null;
   }
 }
 
 export async function playAudio(source: AudioSource): Promise<void> {
+  if (!Audio) return;
   await stopAudio();
 
-  await Audio.setAudioModeAsync({
-    allowsRecordingIOS: false,
-    playsInSilentModeIOS: true,
-    staysActiveInBackground: true,
-  });
+  try {
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: true,
+    });
+  } catch {
+    return;
+  }
 
-  let sound: Audio.Sound;
+  let sound: any;
 
   switch (source.type) {
     case 'native':
-      // Native sounds are handled by the notification system
       return;
     case 'builtin': {
       const file = getBuiltinAudioFile(source.trackId);
       if (!file) return;
-      const { sound: s } = await Audio.Sound.createAsync(file);
-      sound = s;
+      try {
+        const result = await Audio.Sound.createAsync(file);
+        sound = result.sound;
+      } catch { return; }
       break;
     }
     case 'custom': {
-      const { sound: s } = await Audio.Sound.createAsync({ uri: source.uri });
-      sound = s;
+      try {
+        const result = await Audio.Sound.createAsync({ uri: source.uri });
+        sound = result.sound;
+      } catch { return; }
       break;
     }
   }
 
   currentSound = sound;
-  await sound.playAsync();
+  try { await sound.playAsync(); } catch { /* */ }
 }
 
 export async function stopAudio(): Promise<void> {
@@ -68,17 +78,14 @@ export async function stopAudio(): Promise<void> {
     try {
       await currentSound.stopAsync();
       await currentSound.unloadAsync();
-    } catch {
-      // Sound may already be unloaded
-    }
+    } catch { /* */ }
     currentSound = null;
   }
 }
 
 export async function getAudioDuration(source: AudioSource): Promise<number> {
-  const DEFAULT_DURATION = 30000; // 30s
-
-  if (source.type === 'native') return DEFAULT_DURATION;
+  const DEFAULT_DURATION = 30000;
+  if (!Audio || source.type === 'native') return DEFAULT_DURATION;
 
   let soundFile: any;
   if (source.type === 'builtin') {

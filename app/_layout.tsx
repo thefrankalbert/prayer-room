@@ -35,7 +35,13 @@ function RootLayoutInner() {
           contentStyle: { backgroundColor: colors.background },
           headerShadowVisible: false,
         }}
-      />
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="alarm-triggered" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="alarm" options={{ headerShown: false }} />
+        <Stack.Screen name="packs" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ title: 'Reglages' }} />
+      </Stack>
     </>
   );
 }
