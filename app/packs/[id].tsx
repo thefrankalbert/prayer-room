@@ -2,15 +2,17 @@ import { View, Text, FlatList, StyleSheet, Pressable, Alert } from 'react-native
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { VersePack, Verse } from '../../src/types';
 import { getAllPacks, saveCustomPack, deleteCustomPack } from '../../src/storage/packs';
-import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
 
 export default function PackDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const [pack, setPack] = useState<VersePack | null>(null);
 
   const isCustom = pack ? !pack.isBuiltin && !pack.isDownloaded : false;
@@ -62,17 +64,24 @@ export default function PackDetailScreen() {
     return (
       <Pressable
         onLongPress={() => isCustom && handleDeleteVerse(index)}
-        style={[styles.verseCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.verseCard, Shadow.sm, { backgroundColor: colors.card }]}
       >
-        <Text style={[styles.reference, { color: colors.primary }]}>{item.reference}</Text>
-        <Text style={[styles.verseText, { color: colors.text }]}>{item.text}</Text>
+        <View style={[styles.verseGoldBorder, { backgroundColor: colors.primary }]} />
+        <View style={styles.verseBody}>
+          <Text style={[styles.reference, { color: colors.primary }]}>{item.reference}</Text>
+          <Text style={[styles.verseText, { color: colors.text }]}>{item.text}</Text>
+        </View>
       </Pressable>
     );
   }
 
+  function renderSeparator() {
+    return <View style={[styles.separator, { backgroundColor: colors.borderLight }]} />;
+  }
+
   if (!pack) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.md }]}>
         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
           Chargement...
         </Text>
@@ -81,34 +90,42 @@ export default function PackDetailScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>{pack.name}</Text>
-      <Text style={[styles.description, { color: colors.textSecondary }]}>{pack.description}</Text>
-      <Text style={[styles.count, { color: colors.textSecondary }]}>
-        {pack.verses.length} verset{pack.verses.length !== 1 ? 's' : ''}
-      </Text>
+    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.md }]}>
+      <View style={[styles.headerCard, Shadow.sm, { backgroundColor: colors.card }]}>
+        <Text style={[styles.title, { color: colors.text }]}>{pack.name}</Text>
+        {pack.description ? (
+          <Text style={[styles.description, { color: colors.textSecondary }]}>{pack.description}</Text>
+        ) : null}
+        <View style={[styles.headerCountPill, { backgroundColor: colors.accentSoft }]}>
+          <Text style={[styles.headerCountText, { color: colors.primary }]}>
+            {pack.verses.length} verset{pack.verses.length !== 1 ? 's' : ''}
+          </Text>
+        </View>
+      </View>
 
       <FlatList
         data={pack.verses}
         keyExtractor={(_, index) => index.toString()}
         renderItem={renderVerse}
+        ItemSeparatorComponent={renderSeparator}
         contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
         ListFooterComponent={
           isCustom ? (
             <View style={styles.footer}>
               <Pressable
                 onPress={() => router.push(`/packs/create?editId=${pack.id}`)}
-                style={[styles.addVerseButton, { backgroundColor: colors.primary }]}
+                style={[styles.editButton, Shadow.gold, { backgroundColor: colors.primary }]}
               >
-                <Text style={[styles.addVerseText, { color: colors.background }]}>
+                <Text style={[styles.editButtonText, { color: colors.background }]}>
                   Ajouter un verset
                 </Text>
               </Pressable>
               <Pressable
                 onPress={handleDeletePack}
-                style={[styles.deleteButton, { borderColor: colors.danger }]}
+                style={[styles.deleteButton, { borderColor: colors.borderLight }]}
               >
-                <Text style={{ color: colors.danger, fontSize: FontSize.md, fontWeight: '600' }}>
+                <Text style={[styles.deleteButtonText, { color: colors.textMuted }]}>
                   Supprimer le pack
                 </Text>
               </Pressable>
@@ -121,41 +138,97 @@ export default function PackDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: Spacing.xxl },
-  title: { fontSize: FontSize.xl, fontWeight: '700', paddingHorizontal: Spacing.md, marginBottom: Spacing.xs },
-  description: { fontSize: FontSize.md, paddingHorizontal: Spacing.md, lineHeight: 22, marginBottom: Spacing.xs },
-  count: { fontSize: FontSize.sm, paddingHorizontal: Spacing.md, marginBottom: Spacing.md },
-  list: { paddingHorizontal: Spacing.md, paddingBottom: Spacing.xxl },
-  verseCard: {
+  container: { flex: 1 },
+  headerCard: {
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
     padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
+    borderRadius: BorderRadius.xl,
+  },
+  title: {
+    fontSize: FontSize.xxl,
+    fontFamily: 'Georgia',
+    fontWeight: '700',
+    marginBottom: Spacing.xs,
+  },
+  description: {
+    fontSize: FontSize.md,
+    lineHeight: 22,
     marginBottom: Spacing.sm,
   },
-  reference: {
-    fontSize: FontSize.sm,
+  headerCountPill: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.full,
+  },
+  headerCountText: {
+    fontSize: FontSize.xs,
     fontWeight: '600',
+  },
+  list: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xxxl,
+  },
+  verseCard: {
+    flexDirection: 'row',
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+  },
+  verseGoldBorder: {
+    width: 3,
+    borderTopLeftRadius: BorderRadius.lg,
+    borderBottomLeftRadius: BorderRadius.lg,
+  },
+  verseBody: {
+    flex: 1,
+    padding: Spacing.lg,
+  },
+  reference: {
+    fontSize: FontSize.xs,
+    fontWeight: '700',
     marginBottom: Spacing.sm,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   verseText: {
     fontSize: FontSize.md,
     lineHeight: 24,
     fontStyle: 'italic',
   },
-  emptyText: { textAlign: 'center', marginTop: Spacing.xxl, fontSize: FontSize.md },
-  footer: { marginTop: Spacing.md, gap: Spacing.sm },
-  addVerseButton: {
+  separator: {
+    height: 1,
+    marginVertical: Spacing.sm,
+    marginLeft: Spacing.xxxl,
+    opacity: 0.5,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: Spacing.xxl,
+    fontSize: FontSize.md,
+  },
+  footer: {
+    marginTop: Spacing.xl,
+    gap: Spacing.md,
+    paddingBottom: Spacing.lg,
+  },
+  editButton: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.xl,
     alignItems: 'center',
   },
-  addVerseText: { fontSize: FontSize.md, fontWeight: '700' },
+  editButtonText: {
+    fontSize: FontSize.md,
+    fontWeight: '700',
+  },
   deleteButton: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.xl,
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1,
+  },
+  deleteButtonText: {
+    fontSize: FontSize.sm,
+    fontWeight: '500',
   },
 });
