@@ -1,13 +1,15 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { stopAudio } from '../src/services/audio';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../src/constants/theme';
 
 export default function AlarmTriggeredScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { verseReference, verseText, alarmName } = useLocalSearchParams<{
+  const insets = useSafeAreaInsets();
+  const { verseReference, verseText } = useLocalSearchParams<{
     verseReference: string;
     verseText: string;
     alarmName: string;
@@ -18,61 +20,38 @@ export default function AlarmTriggeredScreen() {
     router.back();
   }
 
-  async function handleStopMusic() {
+  async function handleSilence() {
     await stopAudio();
   }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Top decoration */}
-      <View style={styles.topDecor}>
-        <View style={[styles.decorLine, { backgroundColor: colors.primaryDim }]} />
-        <Text style={[styles.decorSymbol, { color: colors.primary }]}>{'\u2726'}</Text>
-        <View style={[styles.decorLine, { backgroundColor: colors.primaryDim }]} />
-      </View>
-
-      {/* Alarm name */}
-      <Text style={[styles.alarmName, { color: colors.textMuted }]}>
-        {alarmName || 'Prayer Room'}
-      </Text>
-
-      {/* Verse */}
+      {/* Verse - centered, the Word speaks for itself */}
       <View style={styles.verseContainer}>
-        <Text style={[styles.quoteOpen, { color: colors.primaryDim }]}>{'\u201C'}</Text>
         <Text style={[styles.verseText, { color: colors.text }]}>
           {verseText || ''}
         </Text>
-        <Text style={[styles.quoteClose, { color: colors.primaryDim }]}>{'\u201D'}</Text>
-      </View>
-
-      {/* Reference */}
-      <View style={[styles.referenceBadge, { backgroundColor: colors.accentSoft, borderColor: colors.border }]}>
         <Text style={[styles.reference, { color: colors.primary }]}>
           {verseReference || ''}
         </Text>
       </View>
 
-      {/* Bottom decoration */}
-      <View style={styles.bottomDecor}>
-        <View style={[styles.decorLineThin, { backgroundColor: colors.border }]} />
-      </View>
-
-      {/* Buttons */}
-      <View style={styles.buttons}>
+      {/* Buttons at bottom */}
+      <View style={[styles.buttons, { paddingBottom: insets.bottom + Spacing.lg }]}>
         <Pressable
-          onPress={handleStopMusic}
-          style={[styles.secondaryButton, { borderColor: colors.border }]}
+          onPress={handleSilence}
+          style={[styles.secondaryButton, { borderColor: colors.borderLight }]}
         >
-          <Text style={{ color: colors.textSecondary, fontSize: FontSize.md }}>
-            Arreter la musique
+          <Text style={[styles.secondaryButtonText, { color: colors.textSecondary }]}>
+            Silence
           </Text>
         </Pressable>
         <Pressable
           onPress={handleClose}
-          style={[styles.primaryButton, { backgroundColor: colors.primary }, Shadow.gold]}
+          style={[styles.primaryButton, { backgroundColor: colors.primary }]}
         >
-          <Text style={{ color: colors.background, fontSize: FontSize.lg, fontWeight: '700' }}>
-            Amen — Fermer
+          <Text style={styles.primaryButtonText}>
+            Fermer
           </Text>
         </Pressable>
       </View>
@@ -85,86 +64,53 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: Spacing.xl,
-  },
-  topDecor: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
-  decorLine: { width: 40, height: 1 },
-  decorSymbol: { fontSize: 16 },
-  decorLineThin: { width: 60, height: StyleSheet.hairlineWidth },
-  alarmName: {
-    fontSize: FontSize.xs,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 4,
-    marginBottom: Spacing.xxl,
   },
   verseContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.xl,
     maxWidth: '90%',
   },
-  quoteOpen: {
-    fontSize: 72,
-    lineHeight: 72,
-    fontFamily: 'Georgia',
-    fontWeight: '700',
-    marginBottom: -20,
-    alignSelf: 'flex-start',
-  },
   verseText: {
-    fontSize: 22,
-    lineHeight: 34,
-    fontFamily: 'Georgia',
+    fontSize: FontSize.xxl,
+    fontWeight: '300',
     fontStyle: 'italic',
     textAlign: 'center',
-    paddingVertical: Spacing.sm,
-  },
-  quoteClose: {
-    fontSize: 72,
-    lineHeight: 72,
-    fontFamily: 'Georgia',
-    fontWeight: '700',
-    marginTop: -12,
-    alignSelf: 'flex-end',
-  },
-  referenceBadge: {
-    marginTop: Spacing.lg,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
+    lineHeight: 40,
+    marginBottom: Spacing.xl,
   },
   reference: {
     fontSize: FontSize.sm,
-    fontWeight: '700',
+    fontWeight: '500',
+    letterSpacing: 1,
     textTransform: 'uppercase',
-    letterSpacing: 2,
-  },
-  bottomDecor: {
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.lg,
   },
   buttons: {
     position: 'absolute',
-    bottom: Spacing.xxl,
-    left: Spacing.xl,
-    right: Spacing.xl,
-    gap: Spacing.md,
+    bottom: 0,
+    left: Spacing.lg,
+    right: Spacing.lg,
+    gap: Spacing.sm,
   },
   secondaryButton: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 0.33,
     alignItems: 'center',
   },
+  secondaryButtonText: {
+    fontSize: FontSize.md,
+    fontWeight: '400',
+  },
   primaryButton: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
+  },
+  primaryButtonText: {
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    color: '#000000',
   },
 });

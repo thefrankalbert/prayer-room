@@ -10,7 +10,7 @@ import { IntervalPicker } from '../../src/components/IntervalPicker';
 import { TimePicker } from '../../src/components/TimePicker';
 import { AudioPicker } from '../../src/components/AudioPicker';
 import { PackPicker } from '../../src/components/PackPicker';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 
 export default function AlarmScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,7 +25,6 @@ export default function AlarmScreen() {
   const [endTime, setEndTime] = useState('22:00');
   const [audio, setAudio] = useState<AudioSource>({ type: 'native', soundId: 'default', name: 'Son par defaut' });
   const [packId, setPackId] = useState('healing');
-  const [nameFocused, setNameFocused] = useState(false);
 
   useEffect(() => {
     if (!isNew && id) {
@@ -77,57 +76,67 @@ export default function AlarmScreen() {
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.md }]}
-      contentContainerStyle={styles.contentContainer}
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + Spacing.lg }]}
+      showsVerticalScrollIndicator={false}
     >
+      {/* Header */}
       <Text style={[styles.title, { color: colors.text }]}>
         {isNew ? 'Nouvelle alarme' : "Modifier l'alarme"}
       </Text>
 
-      <View style={styles.field}>
-        <Text style={[styles.label, { color: colors.textMuted }]}>NOM</Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          onFocus={() => setNameFocused(true)}
-          onBlur={() => setNameFocused(false)}
-          style={[
-            styles.input,
-            {
-              color: colors.text,
-              backgroundColor: colors.cardElevated,
-              borderColor: nameFocused ? colors.primary : colors.borderLight,
-            },
-            nameFocused && Shadow.gold,
-          ]}
-          placeholderTextColor={colors.textMuted}
-        />
+      {/* Name input - simple underline style */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>NOM</Text>
+        <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            style={[styles.nameInput, { color: colors.text }]}
+            placeholderTextColor={colors.textMuted}
+          />
+        </View>
       </View>
 
-      <IntervalPicker value={interval} onChange={setInterval} />
-
-      <View style={styles.timeRow}>
-        <TimePicker label="Debut" value={startTime} onChange={setStartTime} />
-        <Text style={[styles.timeSep, { color: colors.textMuted }]}>a</Text>
-        <TimePicker label="Fin" value={endTime} onChange={setEndTime} />
+      {/* Interval */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>INTERVALLE</Text>
+        <IntervalPicker value={interval} onChange={setInterval} />
       </View>
 
-      <AudioPicker value={audio} onChange={setAudio} />
-      <PackPicker value={packId} onChange={setPackId} />
+      {/* Time */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>HORAIRES</Text>
+        <View style={styles.timeRow}>
+          <TimePicker label="Debut" value={startTime} onChange={setStartTime} />
+          <Text style={[styles.timeSep, { color: colors.textMuted }]}>a</Text>
+          <TimePicker label="Fin" value={endTime} onChange={setEndTime} />
+        </View>
+      </View>
 
+      {/* Audio */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>SON</Text>
+        <AudioPicker value={audio} onChange={setAudio} />
+      </View>
+
+      {/* Pack */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>VERSETS</Text>
+        <PackPicker value={packId} onChange={setPackId} />
+      </View>
+
+      {/* Save */}
       <Pressable
         onPress={handleSave}
-        style={[
-          styles.saveButton,
-          { backgroundColor: colors.primary },
-          Shadow.gold,
-        ]}
+        style={[styles.saveButton, { backgroundColor: colors.primary }]}
       >
-        <Text style={[styles.saveText, { color: colors.background }]}>
+        <Text style={styles.saveText}>
           {isNew ? "Creer l'alarme" : 'Enregistrer'}
         </Text>
       </Pressable>
 
+      {/* Delete */}
       {!isNew && (
         <Pressable onPress={handleDelete} style={styles.deleteButton}>
           <Text style={[styles.deleteText, { color: colors.danger }]}>
@@ -145,60 +154,64 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   contentContainer: { paddingBottom: Spacing.xl },
   title: {
-    fontSize: FontSize.xxl,
-    fontWeight: '300',
-    fontFamily: 'Georgia',
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.xxxl,
-    marginTop: Spacing.md,
+    fontSize: FontSize.title,
+    fontWeight: '700',
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.xxl,
   },
-  field: {
-    paddingHorizontal: Spacing.md,
+  section: {
     marginBottom: Spacing.xl,
   },
-  label: {
+  sectionHeader: {
     fontSize: FontSize.xs,
-    fontWeight: '700',
-    letterSpacing: 1.5,
+    fontWeight: '500',
+    letterSpacing: 2,
+    paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.sm,
   },
-  input: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1.5,
+  groupCard: {
+    marginHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 0.33,
+    overflow: 'hidden',
+  },
+  nameInput: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md - 2,
     fontSize: FontSize.md,
+    minHeight: 44,
   },
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.xl,
-    marginVertical: Spacing.xl,
+    alignItems: 'flex-end',
+    gap: Spacing.xxl,
+    paddingVertical: Spacing.lg,
   },
   timeSep: {
     fontSize: FontSize.lg,
     fontWeight: '300',
-    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   saveButton: {
     marginHorizontal: Spacing.md,
-    marginTop: Spacing.xl,
-    padding: Spacing.md + 2,
-    borderRadius: BorderRadius.xl,
+    marginTop: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
   },
   saveText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    color: '#000000',
   },
   deleteButton: {
-    marginTop: Spacing.lg,
+    marginTop: Spacing.xl,
     padding: Spacing.md,
     alignItems: 'center',
   },
   deleteText: {
     fontSize: FontSize.sm,
-    fontWeight: '500',
+    fontWeight: '400',
   },
 });

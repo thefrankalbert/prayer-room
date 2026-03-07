@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../src/contexts/ThemeContext';
 import { VersePack, Verse } from '../../../src/types';
 import { getAllPacks, saveCustomPack, deleteCustomPack } from '../../../src/storage/packs';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../../../src/constants/theme';
 
 export default function PackDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -64,12 +64,12 @@ export default function PackDetailScreen() {
     return (
       <Pressable
         onLongPress={() => isCustom && handleDeleteVerse(index)}
-        style={[styles.verseCard, Shadow.sm, { backgroundColor: colors.card }]}
+        style={styles.verseItem}
       >
-        <View style={[styles.verseGoldBorder, { backgroundColor: colors.primary }]} />
+        <View style={[styles.verseAccent, { backgroundColor: colors.primary }]} />
         <View style={styles.verseBody}>
-          <Text style={[styles.reference, { color: colors.primary }]}>{item.reference}</Text>
-          <Text style={[styles.verseText, { color: colors.text }]}>{item.text}</Text>
+          <Text style={[styles.verseReference, { color: colors.text }]}>{item.reference}</Text>
+          <Text style={[styles.verseText, { color: colors.textSecondary }]}>{item.text}</Text>
         </View>
       </Pressable>
     );
@@ -81,8 +81,8 @@ export default function PackDetailScreen() {
 
   if (!pack) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.md }]}>
-        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.lg }]}>
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
           Chargement...
         </Text>
       </View>
@@ -90,19 +90,16 @@ export default function PackDetailScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.md }]}>
-      <View style={[styles.headerCard, Shadow.sm, { backgroundColor: colors.card }]}>
+    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.lg }]}>
+      {/* Title area */}
+      <View style={styles.headerSection}>
         <Text style={[styles.title, { color: colors.text }]}>{pack.name}</Text>
-        {pack.description ? (
-          <Text style={[styles.description, { color: colors.textSecondary }]}>{pack.description}</Text>
-        ) : null}
-        <View style={[styles.headerCountPill, { backgroundColor: colors.accentSoft }]}>
-          <Text style={[styles.headerCountText, { color: colors.primary }]}>
-            {pack.verses.length} verset{pack.verses.length !== 1 ? 's' : ''}
-          </Text>
-        </View>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+          {pack.verses.length} verset{pack.verses.length !== 1 ? 's' : ''}
+        </Text>
       </View>
 
+      {/* Verse list */}
       <FlatList
         data={pack.verses}
         keyExtractor={(_, index) => index.toString()}
@@ -115,17 +112,12 @@ export default function PackDetailScreen() {
             <View style={styles.footer}>
               <Pressable
                 onPress={() => router.push(`/(tabs)/packs/create?editId=${pack.id}`)}
-                style={[styles.editButton, Shadow.gold, { backgroundColor: colors.primary }]}
+                style={[styles.addButton, { backgroundColor: colors.primary }]}
               >
-                <Text style={[styles.editButtonText, { color: colors.background }]}>
-                  Ajouter un verset
-                </Text>
+                <Text style={styles.addButtonText}>Ajouter un verset</Text>
               </Pressable>
-              <Pressable
-                onPress={handleDeletePack}
-                style={[styles.deleteButton, { borderColor: colors.borderLight }]}
-              >
-                <Text style={[styles.deleteButtonText, { color: colors.textMuted }]}>
+              <Pressable onPress={handleDeletePack} style={styles.deleteButton}>
+                <Text style={[styles.deleteText, { color: colors.danger }]}>
                   Supprimer le pack
                 </Text>
               </Pressable>
@@ -139,70 +131,49 @@ export default function PackDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  headerCard: {
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.lg,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.xl,
+  headerSection: {
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
   title: {
-    fontSize: FontSize.xxl,
-    fontFamily: 'Georgia',
+    fontSize: FontSize.title,
     fontWeight: '700',
     marginBottom: Spacing.xs,
   },
-  description: {
-    fontSize: FontSize.md,
-    lineHeight: 22,
-    marginBottom: Spacing.sm,
-  },
-  headerCountPill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
-    borderRadius: BorderRadius.full,
-  },
-  headerCountText: {
-    fontSize: FontSize.xs,
-    fontWeight: '600',
+  subtitle: {
+    fontSize: FontSize.sm,
+    letterSpacing: 0.5,
   },
   list: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxxl,
   },
-  verseCard: {
+  verseItem: {
     flexDirection: 'row',
-    borderRadius: BorderRadius.lg,
-    overflow: 'hidden',
+    paddingVertical: Spacing.md,
   },
-  verseGoldBorder: {
-    width: 3,
-    borderTopLeftRadius: BorderRadius.lg,
-    borderBottomLeftRadius: BorderRadius.lg,
+  verseAccent: {
+    width: 2,
+    borderRadius: 1,
+    marginRight: Spacing.md,
   },
   verseBody: {
     flex: 1,
-    padding: Spacing.lg,
   },
-  reference: {
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-    marginBottom: Spacing.sm,
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
+  verseReference: {
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
   },
   verseText: {
-    fontSize: FontSize.md,
-    lineHeight: 24,
-    fontStyle: 'italic',
+    fontSize: FontSize.sm,
+    lineHeight: 22,
   },
   separator: {
-    height: 1,
-    marginVertical: Spacing.sm,
-    marginLeft: Spacing.xxxl,
-    opacity: 0.5,
+    height: 0.33,
+    marginLeft: 2 + Spacing.md,
   },
-  emptyText: {
+  loadingText: {
     textAlign: 'center',
     marginTop: Spacing.xxl,
     fontSize: FontSize.md,
@@ -212,23 +183,22 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     paddingBottom: Spacing.lg,
   },
-  editButton: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.xl,
+  addButton: {
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
   },
-  editButtonText: {
+  addButtonText: {
     fontSize: FontSize.md,
-    fontWeight: '700',
+    fontWeight: '600',
+    color: '#000000',
   },
   deleteButton: {
     padding: Spacing.md,
-    borderRadius: BorderRadius.xl,
     alignItems: 'center',
-    borderWidth: 1,
   },
-  deleteButtonText: {
+  deleteText: {
     fontSize: FontSize.sm,
-    fontWeight: '500',
+    fontWeight: '400',
   },
 });

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../src/contexts/ThemeContext';
 import { VersePack, Verse } from '../../../src/types';
 import { getAllPacks, saveCustomPack } from '../../../src/storage/packs';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../../../src/constants/theme';
 
 export default function CreatePackScreen() {
   const router = useRouter();
@@ -73,7 +73,7 @@ export default function CreatePackScreen() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={{ paddingTop: insets.top + Spacing.md, paddingBottom: Spacing.xxxl }}
+      contentContainerStyle={{ paddingTop: insets.top + Spacing.lg, paddingBottom: Spacing.xxxl }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
@@ -81,102 +81,97 @@ export default function CreatePackScreen() {
         {existingId ? 'Modifier le pack' : 'Nouveau pack'}
       </Text>
 
-      {/* Form fields card */}
-      <View style={[styles.formCard, Shadow.sm, { backgroundColor: colors.card }]}>
-        <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>Nom</Text>
+      {/* Name & Description grouped */}
+      <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={styles.inputRow}>
+          <Text style={[styles.inputLabel, { color: colors.textMuted }]}>Nom</Text>
           <TextInput
             value={name}
             onChangeText={setName}
             placeholder="Ex: Mes versets preferes"
-            style={[styles.input, { color: colors.text, backgroundColor: colors.cardElevated, borderColor: colors.borderLight }]}
+            style={[styles.inputField, { color: colors.text }]}
             placeholderTextColor={colors.textMuted}
           />
         </View>
-
-        <View style={[styles.fieldSeparator, { backgroundColor: colors.borderLight }]} />
-
-        <View style={styles.field}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>Description</Text>
+        <View style={[styles.rowSeparator, { backgroundColor: colors.borderLight }]} />
+        <View style={styles.inputRow}>
+          <Text style={[styles.inputLabel, { color: colors.textMuted }]}>Description</Text>
           <TextInput
             value={description}
             onChangeText={setDescription}
-            placeholder="Une courte description du pack"
+            placeholder="Courte description"
             multiline
-            style={[styles.input, styles.textArea, { color: colors.text, backgroundColor: colors.cardElevated, borderColor: colors.borderLight }]}
+            style={[styles.inputField, { color: colors.text }]}
             placeholderTextColor={colors.textMuted}
           />
         </View>
       </View>
 
-      {/* Verse entry section */}
-      <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Ajouter un verset</Text>
-      </View>
-
-      <View style={[styles.verseEntryCard, Shadow.sm, { backgroundColor: colors.card }]}>
-        <TextInput
-          value={newReference}
-          onChangeText={setNewReference}
-          placeholder="Reference (ex: Jean 3:16)"
-          style={[styles.input, { color: colors.text, backgroundColor: colors.cardElevated, borderColor: colors.borderLight }]}
-          placeholderTextColor={colors.textMuted}
-        />
-        <TextInput
-          value={newText}
-          onChangeText={setNewText}
-          placeholder="Texte du verset"
-          multiline
-          style={[styles.input, styles.textArea, { color: colors.text, backgroundColor: colors.cardElevated, borderColor: colors.borderLight, marginTop: Spacing.sm }]}
-          placeholderTextColor={colors.textMuted}
-        />
-        <Pressable
-          onPress={handleAddVerse}
-          style={[styles.addButton, { backgroundColor: colors.accentSoft, borderColor: colors.primary }]}
-        >
-          <Text style={[styles.addButtonText, { color: colors.primary }]}>Ajouter</Text>
+      {/* Add verse */}
+      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>AJOUTER UN VERSET</Text>
+      <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={styles.inputRow}>
+          <TextInput
+            value={newReference}
+            onChangeText={setNewReference}
+            placeholder="Reference (ex: Jean 3:16)"
+            style={[styles.inputField, { color: colors.text }]}
+            placeholderTextColor={colors.textMuted}
+          />
+        </View>
+        <View style={[styles.rowSeparator, { backgroundColor: colors.borderLight }]} />
+        <View style={styles.inputRow}>
+          <TextInput
+            value={newText}
+            onChangeText={setNewText}
+            placeholder="Texte du verset"
+            multiline
+            style={[styles.inputField, styles.textArea, { color: colors.text }]}
+            placeholderTextColor={colors.textMuted}
+          />
+        </View>
+        <View style={[styles.rowSeparator, { backgroundColor: colors.borderLight }]} />
+        <Pressable onPress={handleAddVerse} style={styles.addRow}>
+          <Text style={[styles.addRowText, { color: colors.primary }]}>Ajouter</Text>
         </Pressable>
       </View>
 
       {/* Added verses */}
       {verses.length > 0 && (
         <>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Versets ({verses.length})
-            </Text>
-          </View>
-
-          <View style={styles.verseList}>
+          <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>
+            VERSETS ({verses.length})
+          </Text>
+          <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
             {verses.map((verse, index) => (
-              <View
-                key={index}
-                style={[styles.miniVerseCard, Shadow.sm, { backgroundColor: colors.card }]}
-              >
-                <View style={[styles.miniVerseGold, { backgroundColor: colors.primary }]} />
-                <View style={styles.miniVerseBody}>
-                  <Text style={[styles.miniVerseRef, { color: colors.primary }]}>{verse.reference}</Text>
-                  <Text style={[styles.miniVerseText, { color: colors.text }]} numberOfLines={2}>
-                    {verse.text}
-                  </Text>
-                </View>
-                <Pressable onPress={() => handleRemoveVerse(index)} style={styles.removeButton}>
-                  <View style={[styles.removeCircle, { backgroundColor: colors.accentSoft }]}>
-                    <Text style={{ color: colors.danger, fontSize: 14, fontWeight: '700' }}>X</Text>
+              <View key={index}>
+                <View style={styles.verseRow}>
+                  <View style={[styles.verseAccent, { backgroundColor: colors.primary }]} />
+                  <View style={styles.verseContent}>
+                    <Text style={[styles.verseRef, { color: colors.text }]}>{verse.reference}</Text>
+                    <Text style={[styles.verseText, { color: colors.textSecondary }]} numberOfLines={2}>
+                      {verse.text}
+                    </Text>
                   </View>
-                </Pressable>
+                  <Pressable onPress={() => handleRemoveVerse(index)} style={styles.removeButton}>
+                    <Text style={[styles.removeText, { color: colors.danger }]}>X</Text>
+                  </Pressable>
+                </View>
+                {index < verses.length - 1 && (
+                  <View style={[styles.rowSeparator, { backgroundColor: colors.borderLight }]} />
+                )}
               </View>
             ))}
           </View>
         </>
       )}
 
-      {/* Save button */}
+      {/* Save */}
       <Pressable
         onPress={handleSave}
-        style={[styles.saveButton, Shadow.gold, { backgroundColor: colors.primary }]}
+        style={[styles.saveButton, { backgroundColor: colors.primary }]}
       >
-        <Text style={[styles.saveText, { color: colors.background }]}>
+        <Text style={styles.saveText}>
           {existingId ? 'Enregistrer' : 'Creer le pack'}
         </Text>
       </Pressable>
@@ -187,120 +182,103 @@ export default function CreatePackScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   title: {
-    fontSize: FontSize.xxl,
-    fontFamily: 'Georgia',
+    fontSize: FontSize.title,
     fontWeight: '700',
     paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
-  formCard: {
-    marginHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-  },
-  field: {
-    marginBottom: Spacing.xs,
-  },
-  fieldSeparator: {
-    height: 1,
-    marginVertical: Spacing.sm,
-    opacity: 0.5,
-  },
-  label: {
+  sectionLabel: {
     fontSize: FontSize.xs,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: Spacing.xs,
-  },
-  input: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    fontSize: FontSize.md,
-  },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  sectionHeader: {
+    fontWeight: '500',
+    letterSpacing: 2,
     paddingHorizontal: Spacing.lg,
     marginTop: Spacing.xl,
     marginBottom: Spacing.sm,
   },
-  sectionTitle: {
-    fontSize: FontSize.lg,
-    fontFamily: 'Georgia',
-    fontWeight: '600',
-  },
-  verseEntryCard: {
-    marginHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-  },
-  addButton: {
-    marginTop: Spacing.md,
-    padding: Spacing.sm,
+  groupCard: {
+    marginHorizontal: Spacing.md,
     borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  addButtonText: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-  },
-  verseList: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.sm,
-  },
-  miniVerseCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: BorderRadius.lg,
+    borderWidth: 0.33,
     overflow: 'hidden',
   },
-  miniVerseGold: {
-    width: 3,
-    alignSelf: 'stretch',
-    borderTopLeftRadius: BorderRadius.lg,
-    borderBottomLeftRadius: BorderRadius.lg,
+  inputRow: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md - 2,
+    minHeight: 44,
+    justifyContent: 'center',
   },
-  miniVerseBody: {
-    flex: 1,
-    padding: Spacing.md,
-  },
-  miniVerseRef: {
+  inputLabel: {
     fontSize: FontSize.xs,
-    fontWeight: '700',
-    marginBottom: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    fontWeight: '500',
+    letterSpacing: 0.5,
+    marginBottom: Spacing.xs,
   },
-  miniVerseText: {
+  inputField: {
+    fontSize: FontSize.md,
+    padding: 0,
+  },
+  textArea: {
+    minHeight: 60,
+    textAlignVertical: 'top',
+  },
+  rowSeparator: {
+    height: 0.33,
+    marginLeft: Spacing.md,
+  },
+  addRow: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md - 2,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addRowText: {
+    fontSize: FontSize.md,
+    fontWeight: '500',
+  },
+  verseRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md - 2,
+    paddingRight: Spacing.sm,
+    minHeight: 44,
+  },
+  verseAccent: {
+    width: 2,
+    alignSelf: 'stretch',
+    marginLeft: Spacing.md,
+    marginRight: Spacing.md,
+    borderRadius: 1,
+  },
+  verseContent: {
+    flex: 1,
+  },
+  verseRef: {
     fontSize: FontSize.sm,
-    fontStyle: 'italic',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  verseText: {
+    fontSize: FontSize.sm,
     lineHeight: 20,
   },
   removeButton: {
     padding: Spacing.sm,
-    marginRight: Spacing.xs,
   },
-  removeCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: BorderRadius.full,
-    justifyContent: 'center',
-    alignItems: 'center',
+  removeText: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
   },
   saveButton: {
-    marginHorizontal: Spacing.lg,
+    marginHorizontal: Spacing.md,
     marginTop: Spacing.xl,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
   },
   saveText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    color: '#000000',
   },
 });

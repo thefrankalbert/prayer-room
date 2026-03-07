@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { VersePack } from '../types';
 import { getAllPacks } from '../storage/packs';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../constants/theme';
 
 interface PackPickerProps {
   value: string; // packId
@@ -20,91 +20,80 @@ export function PackPicker({ value, onChange }: PackPickerProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.textMuted }]}>VERSETS</Text>
-      {packs.map((pack) => {
-        const selected = value === pack.id;
-        return (
-          <Pressable
-            key={pack.id}
-            onPress={() => onChange(pack.id)}
-            style={[
-              styles.item,
-              {
-                backgroundColor: selected ? colors.cardElevated : colors.card,
-                borderColor: selected ? colors.borderLight : colors.borderLight,
-              },
-              selected && {
-                borderLeftColor: colors.primary,
-                borderLeftWidth: 3,
-              },
-              selected && Shadow.sm,
-            ]}
-          >
-            <View style={styles.itemContent}>
-              <Text
-                style={[
-                  styles.itemName,
-                  { color: colors.text },
-                ]}
-              >
-                {pack.name}
-              </Text>
-              <View
-                style={[
-                  styles.countBadge,
-                  {
-                    backgroundColor: selected ? colors.accentSoft : colors.accentSoft,
-                  },
-                ]}
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        {packs.map((pack, index) => {
+          const selected = value === pack.id;
+          const isLast = index === packs.length - 1;
+          return (
+            <View key={pack.id}>
+              <Pressable
+                onPress={() => onChange(pack.id)}
+                style={styles.row}
               >
                 <Text
-                  style={[
-                    styles.countText,
-                    { color: colors.primary },
-                  ]}
+                  style={[styles.itemName, { color: colors.text }]}
+                  numberOfLines={1}
                 >
-                  {pack.verses.length} versets
+                  {pack.name}
                 </Text>
-              </View>
+                <View style={styles.rowRight}>
+                  <Text style={[styles.countText, { color: colors.textMuted }]}>
+                    {pack.verses.length} versets
+                  </Text>
+                  {selected && (
+                    <Text style={[styles.checkmark, { color: colors.primary }]}>
+                      {'\u2713'}
+                    </Text>
+                  )}
+                </View>
+              </Pressable>
+              {!isLast && (
+                <View style={[styles.separator, { backgroundColor: colors.borderLight }]} />
+              )}
             </View>
-          </Pressable>
-        );
-      })}
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { marginVertical: Spacing.lg, paddingHorizontal: Spacing.md },
-  label: {
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    marginBottom: Spacing.md,
+  container: {
+    marginVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
   },
-  item: {
-    padding: Spacing.md,
+  card: {
     borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    marginBottom: Spacing.sm,
+    borderWidth: 0.33,
+    overflow: 'hidden',
   },
-  itemContent: {
+  row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md - 2,
+    minHeight: 44,
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  separator: {
+    height: 0.33,
+    marginLeft: Spacing.md,
   },
   itemName: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
+    fontSize: FontSize.md,
     flex: 1,
   },
-  countBadge: {
-    paddingHorizontal: Spacing.sm + 2,
-    paddingVertical: 3,
-    borderRadius: BorderRadius.full,
-  },
   countText: {
-    fontSize: FontSize.xs,
-    fontWeight: '600',
+    fontSize: FontSize.sm,
+  },
+  checkmark: {
+    fontSize: FontSize.lg,
+    fontWeight: '500',
   },
 });

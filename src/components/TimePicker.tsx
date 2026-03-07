@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useTheme } from '../contexts/ThemeContext';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
+import { Spacing, FontSize } from '../constants/theme';
 
 interface TimePickerProps {
   label: string;
@@ -41,14 +41,6 @@ export function TimePicker({ label, value, onChange }: TimePickerProps) {
       <Text style={[styles.label, { color: colors.textMuted }]}>{label.toUpperCase()}</Text>
       <Pressable
         onPress={() => setShowPicker(true)}
-        style={[
-          styles.timeButton,
-          {
-            backgroundColor: colors.cardElevated,
-            borderColor: showPicker ? colors.primary : colors.borderLight,
-          },
-          showPicker && Shadow.gold,
-        ]}
       >
         <Text style={[styles.timeText, { color: colors.text }]}>{value}</Text>
       </Pressable>
@@ -70,19 +62,13 @@ const styles = StyleSheet.create({
   container: { alignItems: 'center' },
   label: {
     fontSize: FontSize.xs,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    marginBottom: Spacing.sm,
-  },
-  timeButton: {
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
+    fontWeight: '500',
+    letterSpacing: 2,
+    marginBottom: Spacing.xs,
   },
   timeText: {
-    fontSize: FontSize.display,
-    fontWeight: '300',
-    fontFamily: 'Georgia',
+    fontSize: FontSize.hero,
+    fontWeight: '200',
+    letterSpacing: -1,
   },
 });
