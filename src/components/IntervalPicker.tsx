@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
 
 const PRESETS = [
   { label: '30 min', minutes: 30 },
@@ -22,7 +22,7 @@ export function IntervalPicker({ value, onChange }: IntervalPickerProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.text }]}>Intervalle</Text>
+      <Text style={[styles.label, { color: colors.textMuted }]}>INTERVALLE</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -37,9 +37,10 @@ export function IntervalPicker({ value, onChange }: IntervalPickerProps) {
               style={[
                 styles.chip,
                 {
-                  backgroundColor: selected ? colors.primary : colors.card,
-                  borderColor: selected ? colors.primary : colors.border,
+                  backgroundColor: selected ? colors.primary : colors.accentSoft,
+                  borderColor: selected ? colors.primary : 'transparent',
                 },
+                selected && Shadow.gold,
               ]}
             >
               <Text
@@ -59,22 +60,23 @@ export function IntervalPicker({ value, onChange }: IntervalPickerProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { marginBottom: Spacing.md },
+  container: { marginBottom: Spacing.lg },
   label: {
-    fontSize: FontSize.md,
-    fontWeight: '600',
+    fontSize: FontSize.xs,
+    fontWeight: '700',
+    letterSpacing: 1.5,
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   scrollContent: {
     paddingHorizontal: Spacing.md,
     gap: Spacing.sm,
   },
   chip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm + 2,
     borderRadius: BorderRadius.full,
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
   chipText: {
     fontSize: FontSize.sm,

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useTheme } from '../contexts/ThemeContext';
-import { Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
 
 interface TimePickerProps {
   label: string;
@@ -38,10 +38,17 @@ export function TimePicker({ label, value, onChange }: TimePickerProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
+      <Text style={[styles.label, { color: colors.textMuted }]}>{label.toUpperCase()}</Text>
       <Pressable
         onPress={() => setShowPicker(true)}
-        style={[styles.timeButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[
+          styles.timeButton,
+          {
+            backgroundColor: colors.cardElevated,
+            borderColor: showPicker ? colors.primary : colors.borderLight,
+          },
+          showPicker && Shadow.gold,
+        ]}
       >
         <Text style={[styles.timeText, { color: colors.text }]}>{value}</Text>
       </Pressable>
@@ -62,17 +69,20 @@ export function TimePicker({ label, value, onChange }: TimePickerProps) {
 const styles = StyleSheet.create({
   container: { alignItems: 'center' },
   label: {
-    fontSize: FontSize.sm,
-    marginBottom: Spacing.xs,
+    fontSize: FontSize.xs,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginBottom: Spacing.sm,
   },
   timeButton: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1.5,
   },
   timeText: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
+    fontSize: FontSize.display,
+    fontWeight: '300',
+    fontFamily: 'Georgia',
   },
 });

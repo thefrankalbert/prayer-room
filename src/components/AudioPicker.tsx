@@ -4,7 +4,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useTheme } from '../contexts/ThemeContext';
 import { AudioSource } from '../types';
 import { NATIVE_SOUNDS, BUILTIN_TRACKS } from '../data/builtin-audio';
-import { Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
 
 interface AudioPickerProps {
   value: AudioSource;
@@ -71,15 +71,20 @@ export function AudioPicker({ value, onChange }: AudioPickerProps) {
         style={[
           styles.item,
           {
-            backgroundColor: selected ? colors.primary : colors.card,
-            borderColor: selected ? colors.primary : colors.border,
+            backgroundColor: selected ? colors.cardElevated : colors.card,
+            borderColor: selected ? colors.borderLight : colors.borderLight,
           },
+          selected && {
+            borderLeftColor: colors.primary,
+            borderLeftWidth: 3,
+          },
+          selected && Shadow.sm,
         ]}
       >
         <Text
           style={[
             styles.itemName,
-            { color: selected ? colors.background : colors.text },
+            { color: selected ? colors.text : colors.text },
           ]}
           numberOfLines={1}
         >
@@ -89,14 +94,14 @@ export function AudioPicker({ value, onChange }: AudioPickerProps) {
           style={[
             styles.badge,
             {
-              backgroundColor: selected ? colors.background : colors.surface,
+              backgroundColor: colors.accentSoft,
             },
           ]}
         >
           <Text
             style={[
               styles.badgeText,
-              { color: selected ? colors.primary : colors.textSecondary },
+              { color: colors.primary },
             ]}
           >
             {getTypeBadge(item.type)}
@@ -108,19 +113,25 @@ export function AudioPicker({ value, onChange }: AudioPickerProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.text }]}>Son</Text>
+      <Text style={[styles.label, { color: colors.textMuted }]}>SON</Text>
 
       {value.type === 'custom' && (
         <View
           style={[
             styles.customSelected,
-            { backgroundColor: colors.primary, borderColor: colors.primary },
+            {
+              backgroundColor: colors.cardElevated,
+              borderColor: colors.borderLight,
+              borderLeftColor: colors.primary,
+              borderLeftWidth: 3,
+            },
+            Shadow.sm,
           ]}
         >
-          <Text style={[styles.itemName, { color: colors.background }]} numberOfLines={1}>
+          <Text style={[styles.itemName, { color: colors.text }]} numberOfLines={1}>
             {value.name}
           </Text>
-          <View style={[styles.badge, { backgroundColor: colors.background }]}>
+          <View style={[styles.badge, { backgroundColor: colors.accentSoft }]}>
             <Text style={[styles.badgeText, { color: colors.primary }]}>Perso</Text>
           </View>
         </View>
@@ -137,7 +148,7 @@ export function AudioPicker({ value, onChange }: AudioPickerProps) {
 
       <Pressable
         onPress={handleImportCustom}
-        style={[styles.importButton, { borderColor: colors.primary }]}
+        style={[styles.importButton, { borderColor: colors.primaryDim }]}
       >
         <Text style={[styles.importText, { color: colors.primary }]}>
           Importer un audio
@@ -148,29 +159,30 @@ export function AudioPicker({ value, onChange }: AudioPickerProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { marginVertical: Spacing.md, paddingHorizontal: Spacing.md },
+  container: { marginVertical: Spacing.lg, paddingHorizontal: Spacing.md },
   label: {
-    fontSize: FontSize.md,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
+    fontSize: FontSize.xs,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginBottom: Spacing.md,
   },
-  list: { gap: Spacing.xs },
+  list: { gap: Spacing.sm },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
   customSelected: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    marginBottom: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
   itemName: {
     fontSize: FontSize.sm,
@@ -178,18 +190,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   badge: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: 3,
     borderRadius: BorderRadius.full,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: FontSize.xs,
     fontWeight: '600',
   },
   importButton: {
-    marginTop: Spacing.sm,
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    marginTop: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     alignItems: 'center',
@@ -197,5 +209,6 @@ const styles = StyleSheet.create({
   importText: {
     fontSize: FontSize.sm,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
 });

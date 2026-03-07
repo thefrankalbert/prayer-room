@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, TextInput, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { Alarm, AudioSource } from '../../src/types';
 import { getAlarms, saveAlarm, deleteAlarm } from '../../src/storage/alarms';
@@ -9,12 +10,13 @@ import { IntervalPicker } from '../../src/components/IntervalPicker';
 import { TimePicker } from '../../src/components/TimePicker';
 import { AudioPicker } from '../../src/components/AudioPicker';
 import { PackPicker } from '../../src/components/PackPicker';
-import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
 
 export default function AlarmScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const isNew = id === 'new';
 
   const [name, setName] = useState('Ma priere');
@@ -23,6 +25,7 @@ export default function AlarmScreen() {
   const [endTime, setEndTime] = useState('22:00');
   const [audio, setAudio] = useState<AudioSource>({ type: 'native', soundId: 'default', name: 'Son par defaut' });
   const [packId, setPackId] = useState('healing');
+  const [nameFocused, setNameFocused] = useState(false);
 
   useEffect(() => {
     if (!isNew && id) {
@@ -73,18 +76,31 @@ export default function AlarmScreen() {
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.md }]}
+      contentContainerStyle={styles.contentContainer}
+    >
       <Text style={[styles.title, { color: colors.text }]}>
         {isNew ? 'Nouvelle alarme' : "Modifier l'alarme"}
       </Text>
 
       <View style={styles.field}>
-        <Text style={[styles.label, { color: colors.text }]}>Nom</Text>
+        <Text style={[styles.label, { color: colors.textMuted }]}>NOM</Text>
         <TextInput
           value={name}
           onChangeText={setName}
-          style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.border }]}
-          placeholderTextColor={colors.textSecondary}
+          onFocus={() => setNameFocused(true)}
+          onBlur={() => setNameFocused(false)}
+          style={[
+            styles.input,
+            {
+              color: colors.text,
+              backgroundColor: colors.cardElevated,
+              borderColor: nameFocused ? colors.primary : colors.borderLight,
+            },
+            nameFocused && Shadow.gold,
+          ]}
+          placeholderTextColor={colors.textMuted}
         />
       </View>
 
@@ -92,41 +108,97 @@ export default function AlarmScreen() {
 
       <View style={styles.timeRow}>
         <TimePicker label="Debut" value={startTime} onChange={setStartTime} />
-        <Text style={[styles.timeSep, { color: colors.textSecondary }]}>a</Text>
+        <Text style={[styles.timeSep, { color: colors.textMuted }]}>a</Text>
         <TimePicker label="Fin" value={endTime} onChange={setEndTime} />
       </View>
 
       <AudioPicker value={audio} onChange={setAudio} />
       <PackPicker value={packId} onChange={setPackId} />
 
-      <Pressable onPress={handleSave} style={[styles.saveButton, { backgroundColor: colors.primary }]}>
+      <Pressable
+        onPress={handleSave}
+        style={[
+          styles.saveButton,
+          { backgroundColor: colors.primary },
+          Shadow.gold,
+        ]}
+      >
         <Text style={[styles.saveText, { color: colors.background }]}>
           {isNew ? "Creer l'alarme" : 'Enregistrer'}
         </Text>
       </Pressable>
 
       {!isNew && (
-        <Pressable onPress={handleDelete} style={[styles.deleteButton, { borderColor: colors.danger }]}>
-          <Text style={{ color: colors.danger, fontSize: FontSize.md, fontWeight: '600' }}>
+        <Pressable onPress={handleDelete} style={styles.deleteButton}>
+          <Text style={[styles.deleteText, { color: colors.danger }]}>
             Supprimer l'alarme
           </Text>
         </Pressable>
       )}
 
-      <View style={{ height: 40 }} />
+      <View style={{ height: insets.bottom + Spacing.xl }} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: Spacing.xxl },
-  title: { fontSize: FontSize.xl, fontWeight: '700', paddingHorizontal: Spacing.md, marginBottom: Spacing.lg },
-  field: { paddingHorizontal: Spacing.md, marginBottom: Spacing.md },
-  label: { fontSize: FontSize.md, fontWeight: '600', marginBottom: Spacing.xs },
-  input: { padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1, fontSize: FontSize.md },
-  timeRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: Spacing.lg, marginVertical: Spacing.md },
-  timeSep: { fontSize: FontSize.lg },
-  saveButton: { margin: Spacing.md, padding: Spacing.md, borderRadius: BorderRadius.md, alignItems: 'center' },
-  saveText: { fontSize: FontSize.lg, fontWeight: '700' },
-  deleteButton: { margin: Spacing.md, padding: Spacing.md, borderRadius: BorderRadius.md, alignItems: 'center', borderWidth: 2 },
+  container: { flex: 1 },
+  contentContainer: { paddingBottom: Spacing.xl },
+  title: {
+    fontSize: FontSize.xxl,
+    fontWeight: '300',
+    fontFamily: 'Georgia',
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.xxxl,
+    marginTop: Spacing.md,
+  },
+  field: {
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  label: {
+    fontSize: FontSize.xs,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginBottom: Spacing.sm,
+  },
+  input: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1.5,
+    fontSize: FontSize.md,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.xl,
+    marginVertical: Spacing.xl,
+  },
+  timeSep: {
+    fontSize: FontSize.lg,
+    fontWeight: '300',
+    marginTop: Spacing.lg,
+  },
+  saveButton: {
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.xl,
+    padding: Spacing.md + 2,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+  },
+  saveText: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  deleteButton: {
+    marginTop: Spacing.lg,
+    padding: Spacing.md,
+    alignItems: 'center',
+  },
+  deleteText: {
+    fontSize: FontSize.sm,
+    fontWeight: '500',
+  },
 });

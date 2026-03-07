@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { VersePack } from '../types';
 import { getAllPacks } from '../storage/packs';
-import { Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
 
 interface PackPickerProps {
   value: string; // packId
@@ -20,7 +20,7 @@ export function PackPicker({ value, onChange }: PackPickerProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.text }]}>Versets</Text>
+      <Text style={[styles.label, { color: colors.textMuted }]}>VERSETS</Text>
       {packs.map((pack) => {
         const selected = value === pack.id;
         return (
@@ -30,28 +30,42 @@ export function PackPicker({ value, onChange }: PackPickerProps) {
             style={[
               styles.item,
               {
-                backgroundColor: selected ? colors.primary : colors.card,
-                borderColor: selected ? colors.primary : colors.border,
+                backgroundColor: selected ? colors.cardElevated : colors.card,
+                borderColor: selected ? colors.borderLight : colors.borderLight,
               },
+              selected && {
+                borderLeftColor: colors.primary,
+                borderLeftWidth: 3,
+              },
+              selected && Shadow.sm,
             ]}
           >
             <View style={styles.itemContent}>
               <Text
                 style={[
                   styles.itemName,
-                  { color: selected ? colors.background : colors.text },
+                  { color: colors.text },
                 ]}
               >
                 {pack.name}
               </Text>
-              <Text
+              <View
                 style={[
-                  styles.itemCount,
-                  { color: selected ? colors.background : colors.textSecondary },
+                  styles.countBadge,
+                  {
+                    backgroundColor: selected ? colors.accentSoft : colors.accentSoft,
+                  },
                 ]}
               >
-                {pack.verses.length} versets
-              </Text>
+                <Text
+                  style={[
+                    styles.countText,
+                    { color: colors.primary },
+                  ]}
+                >
+                  {pack.verses.length} versets
+                </Text>
+              </View>
             </View>
           </Pressable>
         );
@@ -61,17 +75,18 @@ export function PackPicker({ value, onChange }: PackPickerProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { marginVertical: Spacing.md, paddingHorizontal: Spacing.md },
+  container: { marginVertical: Spacing.lg, paddingHorizontal: Spacing.md },
   label: {
-    fontSize: FontSize.md,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
+    fontSize: FontSize.xs,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginBottom: Spacing.md,
   },
   item: {
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    marginBottom: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
   itemContent: {
     flexDirection: 'row',
@@ -81,8 +96,15 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: FontSize.sm,
     fontWeight: '600',
+    flex: 1,
   },
-  itemCount: {
-    fontSize: FontSize.sm,
+  countBadge: {
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.full,
+  },
+  countText: {
+    fontSize: FontSize.xs,
+    fontWeight: '600',
   },
 });
