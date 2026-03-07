@@ -1,3 +1,4 @@
+import { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,16 +8,56 @@ import {
   Pressable,
   Alert,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { Spacing, FontSize, BorderRadius } from '../src/constants/theme';
+import {
+  TIP_PRODUCTS,
+  initIAP,
+  fetchProducts,
+  purchaseTip,
+  endIAP,
+} from '../src/services/purchases';
 
 export default function SettingsScreen() {
   const { mode, colors, toggleTheme } = useTheme();
+  const [iapReady, setIapReady] = useState(false);
+  const [tips, setTips] = useState(TIP_PRODUCTS);
+  const [purchasing, setPurchasing] = useState<string | null>(null);
 
-  function handleTip(label: string) {
-    Alert.alert(label, 'Bientot disponible');
-  }
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      const ok = await initIAP();
+      if (!mounted) return;
+      setIapReady(ok);
+      const products = await fetchProducts();
+      if (mounted) setTips(products);
+    })();
+
+    return () => {
+      mounted = false;
+      endIAP();
+    };
+  }, []);
+
+  const handleTip = useCallback(
+    async (productId: string, label: string) => {
+      if (!iapReady) {
+        Alert.alert(label, 'Les achats integres ne sont pas encore disponibles. Merci pour votre generosite !');
+        return;
+      }
+      setPurchasing(productId);
+      const success = await purchaseTip(productId);
+      setPurchasing(null);
+      if (success) {
+        Alert.alert('Merci !', 'Votre soutien est une vraie benediction. Que Dieu vous benisse !');
+      }
+    },
+    [iapReady],
+  );
 
   return (
     <ScrollView
@@ -84,19 +125,28 @@ export default function SettingsScreen() {
           priere, vous pouvez soutenir son developpement.
         </Text>
         <View style={styles.tipsRow}>
-          {[
-            { label: 'Cafe \u2615', price: '1,99\u20AC' },
-            { label: 'Repas \uD83C\uDF7D\uFE0F', price: '4,99\u20AC' },
-            { label: 'Benediction \uD83D\uDE4F', price: '9,99\u20AC' },
-          ].map((tip) => (
+          {tips.map((tip) => (
             <Pressable
-              key={tip.label}
-              onPress={() => handleTip(`${tip.label} - ${tip.price}`)}
-              style={[styles.tipButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              key={tip.id}
+              onPress={() => handleTip(tip.id, `${tip.emoji} ${tip.label}`)}
+              disabled={purchasing !== null}
+              style={[
+                styles.tipButton,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+                purchasing === tip.id && { opacity: 0.6 },
+              ]}
             >
-              <Text style={[styles.tipLabel, { color: colors.text }]}>
-                {tip.label}
-              </Text>
+              {purchasing === tip.id ? (
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primary}
+                  style={{ marginBottom: Spacing.xs }}
+                />
+              ) : (
+                <Text style={[styles.tipLabel, { color: colors.text }]}>
+                  {tip.emoji} {tip.label}
+                </Text>
+              )}
               <Text style={[styles.tipPrice, { color: colors.primary }]}>
                 {tip.price}
               </Text>
