@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Prayer Room",
+    "slug": "prayer-room",
+    "scheme": "prayerroom",
+    "version": "1.0.0",
+    "platforms": ["ios"],
+    "icon": "./assets/icon.png",
+    "splash": { "backgroundColor": "#1a1a2e" },
+    "ios": {
+      "bundleIdentifier": "com.prayerroom.app",
+      "supportsTablet": false
+    },
+    "plugins": ["expo-router", "expo-notifications", "expo-document-picker"]
+  }
+}
