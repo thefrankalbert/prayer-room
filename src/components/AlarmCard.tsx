@@ -1,7 +1,7 @@
 import { View, Text, Switch, StyleSheet, Pressable } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { Alarm } from '../types';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../constants/theme';
 
 interface Props {
   alarm: Alarm;
@@ -13,7 +13,7 @@ export function AlarmCard({ alarm, onToggle, onPress }: Props) {
   const { colors } = useTheme();
 
   const formatInterval = (min: number) => {
-    if (min < 60) return `${min} min`;
+    if (min < 60) return `${min}min`;
     const h = Math.floor(min / 60);
     const m = min % 60;
     return m > 0 ? `${h}h${m}` : `${h}h`;
@@ -22,36 +22,30 @@ export function AlarmCard({ alarm, onToggle, onPress }: Props) {
   return (
     <Pressable
       onPress={() => onPress(alarm)}
-      style={[
-        styles.container,
-        {
-          backgroundColor: alarm.enabled ? colors.card : colors.surface,
-          borderColor: alarm.enabled ? colors.borderLight : colors.border,
-        },
-        alarm.enabled && Shadow.sm,
-      ]}
+      style={[styles.container, { borderBottomColor: colors.border }]}
     >
-      <View style={[styles.indicator, { backgroundColor: alarm.enabled ? colors.primary : colors.textMuted }]} />
-      <View style={styles.content}>
-        <Text style={[styles.name, { color: alarm.enabled ? colors.text : colors.textSecondary }]}>
-          {alarm.name}
+      <View style={styles.left}>
+        <Text style={[
+          styles.interval,
+          { color: alarm.enabled ? colors.text : colors.textMuted }
+        ]}>
+          {formatInterval(alarm.intervalMinutes)}
         </Text>
-        <View style={styles.detailRow}>
-          <View style={[styles.badge, { backgroundColor: colors.accentSoft }]}>
-            <Text style={[styles.badgeText, { color: colors.primary }]}>
-              {formatInterval(alarm.intervalMinutes)}
-            </Text>
-          </View>
-          <Text style={[styles.timeText, { color: colors.textSecondary }]}>
-            {alarm.startTime} — {alarm.endTime}
+        <View style={styles.meta}>
+          <Text style={[styles.name, { color: alarm.enabled ? colors.textSecondary : colors.textMuted }]}>
+            {alarm.name}
+          </Text>
+          <Text style={[styles.dot, { color: colors.textMuted }]}> · </Text>
+          <Text style={[styles.time, { color: alarm.enabled ? colors.textSecondary : colors.textMuted }]}>
+            {alarm.startTime}–{alarm.endTime}
           </Text>
         </View>
       </View>
       <Switch
         value={alarm.enabled}
         onValueChange={(val) => onToggle(alarm.id, val)}
-        trackColor={{ true: colors.primary, false: colors.border }}
-        thumbColor={alarm.enabled ? '#fff' : colors.textMuted}
+        trackColor={{ true: colors.primary, false: colors.borderLight }}
+        ios_backgroundColor={colors.borderLight}
       />
     </Pressable>
   );
@@ -61,25 +55,24 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.md,
-    paddingLeft: 0,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    marginHorizontal: Spacing.md,
-    marginVertical: Spacing.xs,
-    overflow: 'hidden',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 0.33,
   },
-  indicator: {
-    width: 4,
-    height: '100%',
-    borderTopLeftRadius: BorderRadius.lg,
-    borderBottomLeftRadius: BorderRadius.lg,
-    marginRight: Spacing.md,
+  left: { flex: 1, marginRight: Spacing.md },
+  interval: {
+    fontSize: 42,
+    fontWeight: '200',
+    letterSpacing: -1,
+    lineHeight: 48,
   },
-  content: { flex: 1, marginRight: Spacing.md },
-  name: { fontSize: FontSize.lg, fontWeight: '600', marginBottom: Spacing.xs },
-  detailRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  badge: { paddingHorizontal: Spacing.sm, paddingVertical: 2, borderRadius: BorderRadius.sm },
-  badgeText: { fontSize: FontSize.xs, fontWeight: '700' },
-  timeText: { fontSize: FontSize.sm },
+  meta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  name: { fontSize: FontSize.sm },
+  dot: { fontSize: FontSize.sm },
+  time: { fontSize: FontSize.sm },
 });

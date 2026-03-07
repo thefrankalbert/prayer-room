@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { Alarm, Verse } from '../../src/types';
@@ -12,7 +11,7 @@ import { getAllPacks } from '../../src/storage/packs';
 import { getNextVerse } from '../../src/storage/settings';
 import { scheduleAlarm } from '../../src/services/notifications';
 import { AlarmCard } from '../../src/components/AlarmCard';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 
 export default function HomeScreen() {
   const { colors } = useTheme();
@@ -56,110 +55,62 @@ export default function HomeScreen() {
         data={alarms}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.listContent, { paddingTop: insets.top }]}
+        contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 120 }}
         ListHeaderComponent={
           <>
-            {/* Header */}
+            {/* Minimal header */}
             <View style={styles.header}>
-              <View>
-                <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-                  Bienvenue dans votre
-                </Text>
-                <Text style={[styles.title, { color: colors.text }]}>
-                  Prayer Room
-                </Text>
-              </View>
-            </View>
-
-            {/* Verse Hero Card */}
-            {currentVerse ? (
-              <View style={[styles.verseHero, Shadow.lg]}>
-                <LinearGradient
-                  colors={[colors.card, colors.cardElevated]}
-                  style={styles.verseGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <View style={[styles.verseAccent, { backgroundColor: colors.primary }]} />
-                  <View style={styles.verseContent}>
-                    <Ionicons name="book-outline" size={18} color={colors.primaryDim} style={{ marginBottom: 12 }} />
-                    <Text style={[styles.verseText, { color: colors.text }]}>
-                      {currentVerse.text}
-                    </Text>
-                    <View style={[styles.verseDivider, { backgroundColor: colors.accentSoft }]} />
-                    <Text style={[styles.verseRef, { color: colors.primary }]}>
-                      {currentVerse.reference}
-                    </Text>
-                  </View>
-                </LinearGradient>
-              </View>
-            ) : (
-              /* Empty verse — show inspirational message */
-              <View style={[styles.verseHero, Shadow.md]}>
-                <LinearGradient
-                  colors={[colors.card, colors.cardElevated]}
-                  style={styles.verseGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <View style={[styles.verseAccent, { backgroundColor: colors.primary }]} />
-                  <View style={styles.verseContent}>
-                    <Ionicons name="sparkles" size={18} color={colors.primaryDim} style={{ marginBottom: 12 }} />
-                    <Text style={[styles.verseText, { color: colors.textSecondary }]}>
-                      Creez une alarme pour recevoir des versets bibliques qui nourriront votre priere.
-                    </Text>
-                  </View>
-                </LinearGradient>
-              </View>
-            )}
-
-            {/* Quick Actions */}
-            <View style={styles.quickActions}>
+              <Text style={[styles.title, { color: colors.text }]}>Prayer Room</Text>
               <Pressable
                 onPress={() => router.push('/alarm/new')}
-                style={[styles.quickAction, { backgroundColor: colors.primary }, Shadow.gold]}
+                style={[styles.addBtn, { backgroundColor: colors.primary }]}
               >
-                <Ionicons name="add-circle" size={22} color={colors.background} />
-                <Text style={[styles.quickActionText, { color: colors.background }]}>
-                  Nouvelle alarme
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => router.push('/(tabs)/packs')}
-                style={[styles.quickAction, { backgroundColor: colors.card, borderColor: colors.borderLight, borderWidth: 1 }]}
-              >
-                <Ionicons name="library" size={22} color={colors.primary} />
-                <Text style={[styles.quickActionText, { color: colors.text }]}>
-                  Explorer les versets
-                </Text>
+                <Ionicons name="add" size={22} color="#000" />
               </Pressable>
             </View>
 
-            {/* Alarms section */}
-            {alarms.length > 0 && (
-              <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-                  Mes alarmes
+            {/* Verse — the hero element */}
+            <View style={styles.verseSection}>
+              {currentVerse ? (
+                <>
+                  <Text style={[styles.verseText, { color: colors.text }]}>
+                    {'\u201C'}{currentVerse.text}{'\u201D'}
+                  </Text>
+                  <Text style={[styles.verseRef, { color: colors.primary }]}>
+                    {currentVerse.reference}
+                  </Text>
+                </>
+              ) : (
+                <Text style={[styles.versePlaceholder, { color: colors.textMuted }]}>
+                  Votre verset du jour apparaitra ici.
                 </Text>
-                <Text style={[styles.sectionCount, { color: colors.textMuted }]}>
-                  {alarms.length} {alarms.length > 1 ? 'alarmes' : 'alarme'}
+              )}
+            </View>
+
+            {/* Separator */}
+            <View style={[styles.separator, { backgroundColor: colors.border }]} />
+
+            {/* Alarms header */}
+            <View style={styles.alarmsHeader}>
+              <Text style={[styles.alarmsTitle, { color: colors.text }]}>Alarmes</Text>
+              {alarms.length > 0 && (
+                <Text style={[styles.alarmsCount, { color: colors.textMuted }]}>
+                  {alarms.filter(a => a.enabled).length}/{alarms.length}
                 </Text>
-              </View>
-            )}
+              )}
+            </View>
           </>
         }
         ListEmptyComponent={
-          <View style={styles.emptyAlarms}>
-            <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }, Shadow.sm]}>
-              <Ionicons name="notifications-outline" size={32} color={colors.textMuted} />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>
-                Aucune alarme
-              </Text>
-              <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-                Configurez des rappels de priere reguliers pour rester connecte a Dieu tout au long de la journee.
-              </Text>
-            </View>
-          </View>
+          <Pressable
+            onPress={() => router.push('/alarm/new')}
+            style={[styles.emptyCard, { borderColor: colors.border }]}
+          >
+            <Ionicons name="add-circle-outline" size={28} color={colors.textMuted} />
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              Ajouter votre premiere alarme
+            </Text>
+          </Pressable>
         }
         renderItem={({ item }) => (
           <AlarmCard
@@ -175,111 +126,85 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  listContent: { paddingBottom: 100 },
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.md,
-  },
-  greeting: {
-    fontSize: 13,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  // Verse hero
-  verseHero: {
-    marginHorizontal: Spacing.md,
-    borderRadius: BorderRadius.xl,
-    overflow: 'hidden',
-    marginBottom: Spacing.lg,
-  },
-  verseGradient: {
-    flexDirection: 'row',
-  },
-  verseAccent: {
-    width: 4,
-  },
-  verseContent: {
-    flex: 1,
-    padding: Spacing.lg,
-  },
-  verseText: {
-    fontSize: 16,
-    lineHeight: 26,
-    fontStyle: 'italic',
-  },
-  verseDivider: {
-    height: 1,
-    marginVertical: Spacing.md,
-  },
-  verseRef: {
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-  },
-  // Quick actions
-  quickActions: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
-  },
-  quickAction: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: BorderRadius.lg,
-  },
-  quickActionText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  // Section
-  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xl,
   },
-  sectionTitle: {
-    fontSize: 14,
+  title: {
+    fontSize: FontSize.title,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  addBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // Verse hero
+  verseSection: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.xxl,
+    minHeight: 180,
+    justifyContent: 'center',
+  },
+  verseText: {
+    fontSize: 24,
+    fontWeight: '300',
+    lineHeight: 36,
+    letterSpacing: -0.3,
+    fontStyle: 'italic',
+  },
+  verseRef: {
+    fontSize: FontSize.sm,
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 2,
+    marginTop: Spacing.lg,
   },
-  sectionCount: {
-    fontSize: 13,
+  versePlaceholder: {
+    fontSize: FontSize.lg,
+    fontWeight: '300',
+    fontStyle: 'italic',
   },
-  // Empty
-  emptyAlarms: {
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
+  // Separator
+  separator: {
+    height: 0.33,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
   },
-  emptyCard: {
-    alignItems: 'center',
-    padding: Spacing.xl,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    gap: Spacing.sm,
+  // Alarms
+  alarmsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
   },
-  emptyTitle: {
-    fontSize: 17,
+  alarmsTitle: {
+    fontSize: FontSize.xl,
     fontWeight: '600',
   },
-  emptySubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
+  alarmsCount: {
+    fontSize: FontSize.sm,
+  },
+  // Empty
+  emptyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+  },
+  emptyText: {
+    fontSize: FontSize.md,
   },
 });
