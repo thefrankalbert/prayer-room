@@ -2,14 +2,15 @@ import { Platform, Alert } from 'react-native';
 import {
   initConnection,
   endConnection,
-  getProducts,
+  fetchProducts,
   requestPurchase,
   finishTransaction,
   purchaseUpdatedListener,
   purchaseErrorListener,
-  type ProductPurchase,
+  type Purchase,
   type PurchaseError,
-  type Subscription,
+  type EventSubscription,
+  ErrorCode,
 } from 'react-native-iap';
 
 // ---------------------------------------------------------------------------
@@ -27,8 +28,8 @@ const productIds = TIP_PRODUCTS.map((p) => p.id);
 // State
 // ---------------------------------------------------------------------------
 let connected = false;
-let purchaseUpdateSub: Subscription | null = null;
-let purchaseErrorSub: Subscription | null = null;
+let purchaseUpdateSub: EventSubscription | null = null;
+let purchaseErrorSub: EventSubscription | null = null;
 
 // ---------------------------------------------------------------------------
 // Initialise IAP connection
@@ -40,7 +41,7 @@ export async function initIAP(): Promise<boolean> {
 
     // Listen for successful purchases
     purchaseUpdateSub = purchaseUpdatedListener(
-      async (purchase: ProductPurchase) => {
+      async (purchase: Purchase) => {
         try {
           await finishTransaction({ purchase, isConsumable: true });
         } catch {
@@ -51,7 +52,7 @@ export async function initIAP(): Promise<boolean> {
 
     // Listen for purchase errors
     purchaseErrorSub = purchaseErrorListener((error: PurchaseError) => {
-      if (error.code !== 'E_USER_CANCELLED') {
+      if (error.code !== ErrorCode.UserCancelled) {
         Alert.alert('Erreur', "L'achat n'a pas pu etre finalise.");
       }
     });
@@ -66,18 +67,18 @@ export async function initIAP(): Promise<boolean> {
 // ---------------------------------------------------------------------------
 // Fetch real prices from the store (falls back to hardcoded catalogue)
 // ---------------------------------------------------------------------------
-export async function fetchProducts() {
+export async function fetchTipProducts() {
   if (!connected) return TIP_PRODUCTS;
 
   try {
-    const products = await getProducts({ skus: productIds });
+    const products = await fetchProducts({ skus: productIds });
 
-    if (products.length === 0) return TIP_PRODUCTS;
+    if (!products || products.length === 0) return TIP_PRODUCTS;
 
     return TIP_PRODUCTS.map((tip) => {
-      const storeProduct = products.find((p) => p.productId === tip.id);
+      const storeProduct = products.find((p) => p.id === tip.id);
       return storeProduct
-        ? { ...tip, price: storeProduct.localizedPrice ?? tip.price }
+        ? { ...tip, price: storeProduct.displayPrice ?? tip.price }
         : tip;
     });
   } catch {
@@ -99,9 +100,15 @@ export async function purchaseTip(productId: string): Promise<boolean> {
 
   try {
     if (Platform.OS === 'ios') {
-      await requestPurchase({ sku: productId });
+      await requestPurchase({
+        request: { apple: { sku: productId } },
+        type: 'in-app',
+      });
     } else {
-      await requestPurchase({ skus: [productId] });
+      await requestPurchase({
+        request: { google: { skus: [productId] } },
+        type: 'in-app',
+      });
     }
     return true;
   } catch {

@@ -15,7 +15,7 @@ import { Spacing, FontSize, BorderRadius } from '../src/constants/theme';
 import {
   TIP_PRODUCTS,
   initIAP,
-  fetchProducts,
+  fetchTipProducts,
   purchaseTip,
   endIAP,
 } from '../src/services/purchases';
@@ -33,7 +33,7 @@ export default function SettingsScreen() {
       const ok = await initIAP();
       if (!mounted) return;
       setIapReady(ok);
-      const products = await fetchProducts();
+      const products = await fetchTipProducts();
       if (mounted) setTips(products);
     })();
 
