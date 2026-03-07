@@ -30,17 +30,19 @@ function RootLayoutInner() {
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.text,
+          headerShown: false,
           contentStyle: { backgroundColor: colors.background },
-          headerShadowVisible: false,
         }}
       >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="alarm-triggered" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
-        <Stack.Screen name="alarm" options={{ headerShown: false }} />
-        <Stack.Screen name="packs" options={{ headerShown: false }} />
-        <Stack.Screen name="settings" options={{ title: 'Reglages' }} />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="alarm-triggered"
+          options={{ presentation: 'fullScreenModal' }}
+        />
+        <Stack.Screen
+          name="alarm"
+          options={{ presentation: 'card' }}
+        />
       </Stack>
     </>
   );

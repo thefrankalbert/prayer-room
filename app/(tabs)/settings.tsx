@@ -10,18 +10,20 @@ import {
   Linking,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme } from '../src/contexts/ThemeContext';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
 import {
   TIP_PRODUCTS,
   initIAP,
   fetchTipProducts,
   purchaseTip,
   endIAP,
-} from '../src/services/purchases';
+} from '../../src/services/purchases';
 
 export default function SettingsScreen() {
   const { mode, colors, toggleTheme } = useTheme();
+  const insets = useSafeAreaInsets();
   const [iapReady, setIapReady] = useState(false);
   const [tips, setTips] = useState(TIP_PRODUCTS);
   const [purchasing, setPurchasing] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export default function SettingsScreen() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.lg }]}
     >
       {/* Header */}
       <Text style={[styles.header, { color: colors.text }]}>Reglages</Text>
@@ -201,7 +203,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingTop: Spacing.xxl + Spacing.md,
     paddingBottom: Spacing.xxl,
     paddingHorizontal: Spacing.lg,
   },

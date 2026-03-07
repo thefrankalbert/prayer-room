@@ -2,10 +2,10 @@ import { View, Text, ScrollView, StyleSheet, TextInput, Pressable, Alert } from 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../src/contexts/ThemeContext';
-import { VersePack, Verse } from '../../src/types';
-import { getAllPacks, saveCustomPack } from '../../src/storage/packs';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { useTheme } from '../../../src/contexts/ThemeContext';
+import { VersePack, Verse } from '../../../src/types';
+import { getAllPacks, saveCustomPack } from '../../../src/storage/packs';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../../src/constants/theme';
 
 export default function CreatePackScreen() {
   const router = useRouter();

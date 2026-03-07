@@ -3,10 +3,10 @@ import { useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../src/contexts/ThemeContext';
-import { VersePack } from '../../src/types';
-import { getAllPacks } from '../../src/storage/packs';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { useTheme } from '../../../src/contexts/ThemeContext';
+import { VersePack } from '../../../src/types';
+import { getAllPacks } from '../../../src/storage/packs';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../../src/constants/theme';
 
 const CATEGORY_LABELS: Record<VersePack['category'], string> = {
   healing: 'Guerison',
@@ -44,7 +44,7 @@ export default function PacksListScreen() {
 
     return (
       <Pressable
-        onPress={() => router.push(`/packs/${item.id}`)}
+        onPress={() => router.push(`/(tabs)/packs/${item.id}`)}
         style={[
           styles.card,
           Shadow.sm,
@@ -116,7 +116,7 @@ export default function PacksListScreen() {
       )}
 
       <Pressable
-        onPress={() => router.push('/packs/create')}
+        onPress={() => router.push('/(tabs)/packs/create')}
         style={[styles.fab, Shadow.gold, { backgroundColor: colors.primary }]}
       >
         <Text style={[styles.fabText, { color: colors.background }]}>+</Text>

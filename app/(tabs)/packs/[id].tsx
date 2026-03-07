@@ -3,10 +3,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../src/contexts/ThemeContext';
-import { VersePack, Verse } from '../../src/types';
-import { getAllPacks, saveCustomPack, deleteCustomPack } from '../../src/storage/packs';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { useTheme } from '../../../src/contexts/ThemeContext';
+import { VersePack, Verse } from '../../../src/types';
+import { getAllPacks, saveCustomPack, deleteCustomPack } from '../../../src/storage/packs';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../../src/constants/theme';
 
 export default function PackDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -114,7 +114,7 @@ export default function PackDetailScreen() {
           isCustom ? (
             <View style={styles.footer}>
               <Pressable
-                onPress={() => router.push(`/packs/create?editId=${pack.id}`)}
+                onPress={() => router.push(`/(tabs)/packs/create?editId=${pack.id}`)}
                 style={[styles.editButton, Shadow.gold, { backgroundColor: colors.primary }]}
               >
                 <Text style={[styles.editButtonText, { color: colors.background }]}>
