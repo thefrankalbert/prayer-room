@@ -16,7 +16,7 @@ import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 
 export default function HomeScreen() {
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [alarms, setAlarms] = useState<Alarm[]>([]);
@@ -33,7 +33,7 @@ export default function HomeScreen() {
     setAlarms(loaded);
     const activeAlarm = loaded.find((a) => a.enabled);
     if (activeAlarm) {
-      const packs = await getAllPacks();
+      const packs = await getAllPacks(language);
       const pack = packs.find((p) => p.id === activeAlarm.packId);
       if (pack && pack.verses.length > 0) {
         const verse = await getNextVerse(pack.id, pack.verses);

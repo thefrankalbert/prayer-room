@@ -11,7 +11,7 @@ import { Spacing, FontSize, BorderRadius } from '../../../src/constants/theme';
 export default function CreatePackScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const { editId } = useLocalSearchParams<{ editId?: string }>();
 
@@ -24,7 +24,7 @@ export default function CreatePackScreen() {
 
   useEffect(() => {
     if (editId) {
-      getAllPacks().then((packs) => {
+      getAllPacks(language).then((packs) => {
         const found = packs.find((p) => p.id === editId);
         if (found) {
           setName(found.name);

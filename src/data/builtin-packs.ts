@@ -1,5 +1,6 @@
 import { VersePack } from '../types';
 import verseTags from './verse-tags.json';
+import { getBibleBook } from './bible-require-map';
 
 type Category = keyof typeof verseTags;
 
@@ -34,13 +35,15 @@ export function getBuiltinPacks(language: 'fr' | 'en'): VersePack[] {
       description: language === 'fr' ? cat.desc_fr : cat.desc_en,
       category: cat.category as VersePack['category'],
       isBuiltin: true,
-      verses: tags.map((tag) => ({
-        reference: language === 'fr' ? tag.ref_fr : tag.ref_en,
-        text: '', // Will be resolved from Bible data
-      })),
+      verses: tags.map((tag) => {
+        const translationKey = language === 'fr' ? 'ls1910' : 'kjv';
+        const bookData = getBibleBook(translationKey, tag.book);
+        const text = bookData?.[String(tag.chapter)]?.[String(tag.verse)] || '';
+        return {
+          reference: language === 'fr' ? tag.ref_fr : tag.ref_en,
+          text,
+        };
+      }),
     };
   });
 }
-
-// Keep backward compat — default French packs
-export const BUILTIN_PACKS: VersePack[] = getBuiltinPacks('fr');

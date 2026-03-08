@@ -13,7 +13,7 @@ export default function PackDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const [pack, setPack] = useState<VersePack | null>(null);
 
@@ -21,7 +21,7 @@ export default function PackDetailScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      getAllPacks().then((packs) => {
+      getAllPacks(language).then((packs) => {
         const found = packs.find((p) => p.id === id);
         setPack(found ?? null);
       });

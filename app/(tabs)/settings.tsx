@@ -264,7 +264,4 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: '500',
   },
-  bottomSpacer: {
-    height: Spacing.xl,
-  },
 });

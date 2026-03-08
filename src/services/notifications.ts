@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alarm } from '../types';
 import { getAllPacks } from '../storage/packs';
 
@@ -21,7 +22,9 @@ export async function scheduleAlarm(alarm: Alarm): Promise<void> {
 
   if (!alarm.enabled) return;
 
-  const packs = await getAllPacks();
+  const savedLang = await AsyncStorage.getItem('language');
+  const language = (savedLang === 'en' ? 'en' : 'fr') as 'fr' | 'en';
+  const packs = await getAllPacks(language);
   const pack = packs.find((p) => p.id === alarm.packId);
   if (!pack) return;
 
@@ -42,7 +45,7 @@ export async function scheduleAlarm(alarm: Alarm): Promise<void> {
       content: {
         title: `Prayer Room - ${alarm.name}`,
         body: `${verse.reference}\n${verse.text}`,
-        data: { alarmId: alarm.id, verseReference: verse.reference },
+        data: { alarmId: alarm.id, verseReference: verse.reference, template: alarm.template || 'standard' },
         sound: alarm.audio.type === 'native' ? true : undefined,
       },
       trigger: {

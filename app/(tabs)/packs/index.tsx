@@ -30,15 +30,15 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function PacksListScreen() {
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [packs, setPacks] = useState<VersePack[]>([]);
 
   useFocusEffect(
     useCallback(() => {
-      getAllPacks().then(setPacks);
-    }, [])
+      getAllPacks(language).then(setPacks);
+    }, [language])
   );
 
   function renderPack({ item, index }: { item: VersePack; index: number }) {

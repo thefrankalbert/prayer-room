@@ -8,6 +8,7 @@ import { useLanguage } from '../../../src/contexts/LanguageContext';
 import { Spacing, FontSize, BorderRadius } from '../../../src/constants/theme';
 import bibleMeta from '../../../src/data/bible-meta.json';
 import { getAllPacks, saveCustomPack } from '../../../src/storage/packs';
+import { getBibleBook } from '../../../src/data/bible-require-map';
 import { VersePack } from '../../../src/types';
 
 interface BookMeta {
@@ -38,20 +39,18 @@ export default function BibleChapterScreen() {
     loadChapter();
   }, [bookId, translationKey, chapter]);
 
-  async function loadChapter() {
-    try {
-      // Dynamic import of Bible JSON
-      const data = await import(`../../../assets/bible/${translationKey}/${bookId}.json`);
-      const chapterData = data[String(chapter)] || data.default?.[String(chapter)] || {};
-      setVerses(chapterData);
-    } catch {
+  function loadChapter() {
+    const data = getBibleBook(translationKey || 'ls1910', bookId || '');
+    if (data) {
+      setVerses(data[String(chapter)] || {});
+    } else {
       setVerses({});
     }
   }
 
   async function handleAddToPack(verseNum: string, verseText: string) {
     const ref = `${bookName} ${chapter}:${verseNum}`;
-    const packs = await getAllPacks();
+    const packs = await getAllPacks(language);
     const customPacks = packs.filter((p) => !p.isBuiltin && !p.isDownloaded);
 
     if (customPacks.length === 0) {

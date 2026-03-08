@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { VersePack } from '../types';
 import { getAllPacks } from '../storage/packs';
 import { Spacing, FontSize, BorderRadius } from '../constants/theme';
@@ -12,10 +13,11 @@ interface PackPickerProps {
 
 export function PackPicker({ value, onChange }: PackPickerProps) {
   const { colors } = useTheme();
+  const { t, language } = useLanguage();
   const [packs, setPacks] = useState<VersePack[]>([]);
 
   useEffect(() => {
-    getAllPacks().then(setPacks);
+    getAllPacks(language).then(setPacks);
   }, []);
 
   return (
@@ -38,7 +40,7 @@ export function PackPicker({ value, onChange }: PackPickerProps) {
                 </Text>
                 <View style={styles.rowRight}>
                   <Text style={[styles.countText, { color: colors.textMuted }]}>
-                    {pack.verses.length} versets
+                    {t('packs.verses_count', { count: pack.verses.length })}
                   </Text>
                   {selected && (
                     <Text style={[styles.checkmark, { color: colors.primary }]}>

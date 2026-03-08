@@ -1,18 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { VersePack } from '../types';
-import { BUILTIN_PACKS } from '../data/builtin-packs';
+import { getBuiltinPacks } from '../data/builtin-packs';
 
 const CUSTOM_PACKS_KEY = 'prayer_room_custom_packs';
 const DOWNLOADED_PACKS_KEY = 'prayer_room_downloaded_packs';
 
-export async function getAllPacks(): Promise<VersePack[]> {
+export async function getAllPacks(language: 'fr' | 'en' = 'fr'): Promise<VersePack[]> {
   const [customData, downloadedData] = await Promise.all([
     AsyncStorage.getItem(CUSTOM_PACKS_KEY),
     AsyncStorage.getItem(DOWNLOADED_PACKS_KEY),
   ]);
   const custom: VersePack[] = customData ? JSON.parse(customData) : [];
   const downloaded: VersePack[] = downloadedData ? JSON.parse(downloadedData) : [];
-  return [...BUILTIN_PACKS, ...downloaded, ...custom];
+  return [...getBuiltinPacks(language), ...downloaded, ...custom];
 }
 
 export async function saveCustomPack(pack: VersePack): Promise<void> {

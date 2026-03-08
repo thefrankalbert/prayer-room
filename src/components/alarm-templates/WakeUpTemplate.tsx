@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -13,7 +13,7 @@ interface AlarmTemplateProps {
   onSnooze: () => void;
 }
 
-function getCurrentTime(): string {
+function formatTime(): string {
   const now = new Date();
   return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 }
@@ -21,10 +21,16 @@ function getCurrentTime(): string {
 export function WakeUpTemplate({ verseText, verseReference, onSnooze, onClose }: AlarmTemplateProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const [time, setTime] = useState(formatTime());
+
+  useEffect(() => {
+    const interval = global.setInterval(() => setTime(formatTime()), 10000);
+    return () => global.clearInterval(interval);
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.time, { color: colors.text }]}>{getCurrentTime()}</Text>
+      <Text style={[styles.time, { color: colors.text }]}>{time}</Text>
 
       <View style={styles.verseSection}>
         <Text style={[styles.verseText, { color: colors.text }]}>

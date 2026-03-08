@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, TextInput, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
@@ -29,6 +29,7 @@ export default function AlarmScreen() {
   const [audio, setAudio] = useState<AudioSource>({ type: 'native', soundId: 'default', name: 'audio.default' });
   const [packId, setPackId] = useState('healing');
   const [template, setTemplate] = useState<AlarmTemplate>('standard');
+  const [originalCreatedAt, setOriginalCreatedAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isNew && id) {
@@ -42,6 +43,7 @@ export default function AlarmScreen() {
           setAudio(alarm.audio);
           setPackId(alarm.packId);
           setTemplate(alarm.template || 'standard');
+          setOriginalCreatedAt(alarm.createdAt);
         }
       });
     }
@@ -57,7 +59,7 @@ export default function AlarmScreen() {
       audio,
       packId,
       enabled: true,
-      createdAt: new Date().toISOString(),
+      createdAt: isNew ? new Date().toISOString() : (originalCreatedAt || new Date().toISOString()),
       template,
     };
     await saveAlarm(alarm);
