@@ -21,13 +21,17 @@ const CATEGORY_META: { id: Category; name_fr: string; name_en: string; desc_fr: 
   { id: 'joy', name_fr: 'Joie', name_en: 'Joy', desc_fr: 'Versets sur la joie', desc_en: 'Verses on joy', category: 'joy' },
 ];
 
-/**
- * Generate builtin packs from verse-tags.
- * Verse text will be loaded from Bible data when available;
- * until then, references are used as placeholders.
- */
+// Cache built packs per language to avoid resolving 1000+ verses on every call
+const packsCache: Record<string, VersePack[]> = {};
+
 export function getBuiltinPacks(language: 'fr' | 'en'): VersePack[] {
-  return CATEGORY_META.map((cat) => {
+  if (packsCache[language]) return packsCache[language];
+
+  const translationKey = language === 'fr' ? 'ls1910' : 'kjv';
+  // Pre-load book data to avoid repeated lookups
+  const bookCache: Record<string, Record<string, Record<string, string>> | null> = {};
+
+  const packs = CATEGORY_META.map((cat) => {
     const tags = verseTags[cat.id] || [];
     return {
       id: cat.id,
@@ -36,8 +40,10 @@ export function getBuiltinPacks(language: 'fr' | 'en'): VersePack[] {
       category: cat.category as VersePack['category'],
       isBuiltin: true,
       verses: tags.map((tag) => {
-        const translationKey = language === 'fr' ? 'ls1910' : 'kjv';
-        const bookData = getBibleBook(translationKey, tag.book);
+        if (!(tag.book in bookCache)) {
+          bookCache[tag.book] = getBibleBook(translationKey, tag.book);
+        }
+        const bookData = bookCache[tag.book];
         const text = bookData?.[String(tag.chapter)]?.[String(tag.verse)] || '';
         return {
           reference: language === 'fr' ? tag.ref_fr : tag.ref_en,
@@ -46,4 +52,7 @@ export function getBuiltinPacks(language: 'fr' | 'en'): VersePack[] {
       }),
     };
   });
+
+  packsCache[language] = packs;
+  return packs;
 }

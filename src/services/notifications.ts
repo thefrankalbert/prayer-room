@@ -33,12 +33,15 @@ export async function scheduleAlarm(alarm: Alarm): Promise<void> {
   const startMinutes = startH * 60 + startM;
   const endMinutes = endH * 60 + endM;
 
+  // Support fractional intervals (e.g. 0.5 = 30 seconds)
+  // Notifications schedule at minute granularity; intervals < 1 min are rounded up
+  const effectiveInterval = Math.max(1, Math.round(alarm.intervalMinutes));
   let currentMinute = startMinutes;
   let notifIndex = 0;
 
   while (currentMinute < endMinutes) {
     const hour = Math.floor(currentMinute / 60);
-    const minute = currentMinute % 60;
+    const minute = Math.floor(currentMinute % 60);
     const verse = pack.verses[notifIndex % pack.verses.length];
 
     await Notifications.scheduleNotificationAsync({
@@ -56,7 +59,7 @@ export async function scheduleAlarm(alarm: Alarm): Promise<void> {
       identifier: `${alarm.id}_${notifIndex}`,
     });
 
-    currentMinute += alarm.intervalMinutes;
+    currentMinute += effectiveInterval;
     notifIndex++;
   }
 }
@@ -64,7 +67,7 @@ export async function scheduleAlarm(alarm: Alarm): Promise<void> {
 export async function cancelAlarm(alarmId: string): Promise<void> {
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   for (const notif of scheduled) {
-    if (notif.identifier.startsWith(alarmId)) {
+    if (notif.identifier.startsWith(`${alarmId}_`)) {
       await Notifications.cancelScheduledNotificationAsync(notif.identifier);
     }
   }
