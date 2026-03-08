@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useTheme } from '../contexts/ThemeContext';
 import { Spacing, FontSize } from '../constants/theme';
@@ -25,12 +25,8 @@ function formatTime(date: Date): string {
 
 export function TimePicker({ label, value, onChange }: TimePickerProps) {
   const { colors, mode } = useTheme();
-  const [showPicker, setShowPicker] = useState(false);
 
   const handleChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-    }
     if (selectedDate) {
       onChange(formatTime(selectedDate));
     }
@@ -39,21 +35,15 @@ export function TimePicker({ label, value, onChange }: TimePickerProps) {
   return (
     <View style={styles.container}>
       <Text style={[styles.label, { color: colors.textMuted }]}>{label.toUpperCase()}</Text>
-      <Pressable
-        onPress={() => setShowPicker(true)}
-      >
-        <Text style={[styles.timeText, { color: colors.text }]}>{value}</Text>
-      </Pressable>
-      {showPicker && (
-        <DateTimePicker
-          value={parseTime(value)}
-          mode="time"
-          is24Hour={true}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleChange}
-          themeVariant={mode}
-        />
-      )}
+      <DateTimePicker
+        value={parseTime(value)}
+        mode="time"
+        is24Hour={true}
+        display={Platform.OS === 'ios' ? 'compact' : 'default'}
+        onChange={handleChange}
+        themeVariant={mode}
+        accentColor={colors.primary}
+      />
     </View>
   );
 }
@@ -64,11 +54,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xs,
     fontWeight: '500',
     letterSpacing: 2,
-    marginBottom: Spacing.xs,
-  },
-  timeText: {
-    fontSize: FontSize.hero,
-    fontWeight: '200',
-    letterSpacing: -1,
+    marginBottom: Spacing.sm,
   },
 });

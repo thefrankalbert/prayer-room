@@ -3,7 +3,9 @@ import { useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/contexts/ThemeContext';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 import { VersePack } from '../../../src/types';
 import { getAllPacks } from '../../../src/storage/packs';
 import { Spacing, FontSize, BorderRadius } from '../../../src/constants/theme';
@@ -14,11 +16,21 @@ const CATEGORY_COLORS: Record<string, string> = {
   prosperity: '#c9a84c',
   faith: '#b478c8',
   protection: '#cb824e',
+  love: '#e05c7a',
+  wisdom: '#7c8cc8',
+  praise: '#d4a84c',
+  peace: '#5cb8a5',
+  family: '#c87a4e',
+  work: '#7a9c4e',
+  forgiveness: '#9c7ab8',
+  strength: '#c85c5c',
+  joy: '#e0a030',
   custom: '#8b8a99',
 };
 
 export default function PacksListScreen() {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [packs, setPacks] = useState<VersePack[]>([]);
@@ -57,12 +69,12 @@ export default function PacksListScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.lg }]}>
-      <Text style={[styles.header, { color: colors.text }]}>Versets</Text>
+      <Text style={[styles.header, { color: colors.text }]}>{t('packs.title')}</Text>
 
       {packs.length === 0 ? (
         <View style={styles.empty}>
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Aucun pack disponible.
+            {t('packs.empty')}
           </Text>
         </View>
       ) : (
@@ -76,12 +88,21 @@ export default function PacksListScreen() {
         </View>
       )}
 
+      {/* Browse Bible */}
+      <Pressable
+        onPress={() => router.push('/(tabs)/packs/bible')}
+        style={[styles.bibleButton, { borderColor: colors.primary }]}
+      >
+        <Ionicons name="book-outline" size={20} color={colors.primary} />
+        <Text style={[styles.bibleButtonText, { color: colors.primary }]}>{t('packs.browse_bible')}</Text>
+      </Pressable>
+
       {/* Create button */}
       <Pressable
         onPress={() => router.push('/(tabs)/packs/create')}
         style={[styles.createButton, { backgroundColor: colors.primary }]}
       >
-        <Text style={styles.createButtonText}>Creer un pack</Text>
+        <Text style={styles.createButtonText}>{t('packs.create')}</Text>
       </Pressable>
     </View>
   );
@@ -151,5 +172,20 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     fontWeight: '600',
     color: '#000000',
+  },
+  bibleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  bibleButtonText: {
+    fontSize: FontSize.md,
+    fontWeight: '500',
   },
 });

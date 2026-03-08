@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../src/contexts/ThemeContext';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 import { VersePack, Verse } from '../../../src/types';
 import { getAllPacks, saveCustomPack, deleteCustomPack } from '../../../src/storage/packs';
 import { Spacing, FontSize, BorderRadius } from '../../../src/constants/theme';
@@ -12,6 +13,7 @@ export default function PackDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const [pack, setPack] = useState<VersePack | null>(null);
 
@@ -28,10 +30,10 @@ export default function PackDetailScreen() {
 
   function handleDeleteVerse(index: number) {
     if (!pack || !isCustom) return;
-    Alert.alert('Supprimer le verset', `Supprimer "${pack.verses[index].reference}" ?`, [
-      { text: 'Annuler', style: 'cancel' },
+    Alert.alert(t('common.delete'), t('packs.delete_verse_confirm', { ref: pack.verses[index].reference }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Supprimer',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           const updated = {
@@ -47,10 +49,10 @@ export default function PackDetailScreen() {
 
   function handleDeletePack() {
     if (!pack) return;
-    Alert.alert('Supprimer le pack', `Supprimer "${pack.name}" et tous ses versets ?`, [
-      { text: 'Annuler', style: 'cancel' },
+    Alert.alert(t('packs.delete'), t('packs.delete_confirm', { name: pack.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Supprimer',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteCustomPack(pack.id);
@@ -83,7 +85,7 @@ export default function PackDetailScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.lg }]}>
         <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Chargement...
+          {t('common.loading')}
         </Text>
       </View>
     );
@@ -95,7 +97,7 @@ export default function PackDetailScreen() {
       <View style={styles.headerSection}>
         <Text style={[styles.title, { color: colors.text }]}>{pack.name}</Text>
         <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-          {pack.verses.length} verset{pack.verses.length !== 1 ? 's' : ''}
+          {t('packs.verses_count', { count: pack.verses.length })}
         </Text>
       </View>
 
@@ -114,11 +116,11 @@ export default function PackDetailScreen() {
                 onPress={() => router.push(`/(tabs)/packs/create?editId=${pack.id}`)}
                 style={[styles.addButton, { backgroundColor: colors.primary }]}
               >
-                <Text style={styles.addButtonText}>Ajouter un verset</Text>
+                <Text style={styles.addButtonText}>{t('packs.add_verse_btn')}</Text>
               </Pressable>
               <Pressable onPress={handleDeletePack} style={styles.deleteButton}>
                 <Text style={[styles.deleteText, { color: colors.danger }]}>
-                  Supprimer le pack
+                  {t('packs.delete')}
                 </Text>
               </Pressable>
             </View>

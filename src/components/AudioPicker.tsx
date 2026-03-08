@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { AudioSource } from '../types';
 import { NATIVE_SOUNDS, BUILTIN_TRACKS } from '../data/builtin-audio';
 import { Spacing, FontSize, BorderRadius } from '../constants/theme';
@@ -28,6 +29,7 @@ function isSelected(a: AudioSource, b: AudioSource): boolean {
 
 export function AudioPicker({ value, onChange }: AudioPickerProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const allSources: AudioSource[] = [...NATIVE_SOUNDS, ...BUILTIN_TRACKS];
 
@@ -43,7 +45,7 @@ export function AudioPicker({ value, onChange }: AudioPickerProps) {
         const customSource: AudioSource = {
           type: 'custom',
           uri: asset.uri,
-          name: asset.name || 'Audio personnalise',
+          name: asset.name || t('audio.custom'),
         };
         onChange(customSource);
       }
@@ -72,7 +74,7 @@ export function AudioPicker({ value, onChange }: AudioPickerProps) {
                   style={[styles.itemName, { color: colors.text }]}
                   numberOfLines={1}
                 >
-                  {item.name}
+                  {t(item.name) !== item.name ? t(item.name) : item.name}
                 </Text>
                 {selected && (
                   <Text style={[styles.checkmark, { color: colors.primary }]}>
@@ -90,7 +92,7 @@ export function AudioPicker({ value, onChange }: AudioPickerProps) {
         <View style={[styles.separator, { backgroundColor: colors.borderLight }]} />
         <Pressable onPress={handleImportCustom} style={styles.row}>
           <Text style={[styles.importText, { color: colors.primary }]}>
-            Importer un audio
+            {t('audio.import')}
           </Text>
         </Pressable>
       </View>

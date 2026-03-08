@@ -5,7 +5,9 @@ const ALARMS_KEY = 'prayer_room_alarms';
 
 export async function getAlarms(): Promise<Alarm[]> {
   const data = await AsyncStorage.getItem(ALARMS_KEY);
-  return data ? JSON.parse(data) : [];
+  if (!data) return [];
+  const alarms: Alarm[] = JSON.parse(data);
+  return alarms.map((a) => ({ ...a, template: a.template || 'standard' }));
 }
 
 export async function saveAlarm(alarm: Alarm): Promise<void> {

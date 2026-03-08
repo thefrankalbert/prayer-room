@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
+import { LanguageProvider } from '../src/contexts/LanguageContext';
 import { onNotificationResponse } from '../src/services/notifications';
 
 function RootLayoutInner() {
@@ -18,6 +19,7 @@ function RootLayoutInner() {
             verseReference: data.verseReference as string,
             verseText: response.notification.request.content.body || '',
             alarmName: response.notification.request.content.title || 'Prayer Room',
+            template: (data.template as string) || 'standard',
           },
         });
       }
@@ -41,7 +43,7 @@ function RootLayoutInner() {
         />
         <Stack.Screen
           name="alarm"
-          options={{ presentation: 'card' }}
+          options={{ presentation: 'modal' }}
         />
       </Stack>
     </>
@@ -51,7 +53,9 @@ function RootLayoutInner() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <RootLayoutInner />
+      <LanguageProvider>
+        <RootLayoutInner />
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

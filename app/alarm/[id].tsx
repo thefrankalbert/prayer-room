@@ -1,30 +1,34 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, TextInput, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { Alarm, AudioSource } from '../../src/types';
+import { useLanguage } from '../../src/contexts/LanguageContext';
+import { Alarm, AlarmTemplate, AudioSource } from '../../src/types';
 import { getAlarms, saveAlarm, deleteAlarm } from '../../src/storage/alarms';
 import { scheduleAlarm, cancelAlarm } from '../../src/services/notifications';
 import { IntervalPicker } from '../../src/components/IntervalPicker';
 import { TimePicker } from '../../src/components/TimePicker';
 import { AudioPicker } from '../../src/components/AudioPicker';
 import { PackPicker } from '../../src/components/PackPicker';
+import { TemplatePicker } from '../../src/components/TemplatePicker';
 import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 
 export default function AlarmScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const isNew = id === 'new';
 
-  const [name, setName] = useState('Ma priere');
+  const [name, setName] = useState(t('alarm.name_default'));
   const [interval, setInterval] = useState(60);
   const [startTime, setStartTime] = useState('06:00');
   const [endTime, setEndTime] = useState('22:00');
-  const [audio, setAudio] = useState<AudioSource>({ type: 'native', soundId: 'default', name: 'Son par defaut' });
+  const [audio, setAudio] = useState<AudioSource>({ type: 'native', soundId: 'default', name: 'audio.default' });
   const [packId, setPackId] = useState('healing');
+  const [template, setTemplate] = useState<AlarmTemplate>('standard');
 
   useEffect(() => {
     if (!isNew && id) {
@@ -37,6 +41,7 @@ export default function AlarmScreen() {
           setEndTime(alarm.endTime);
           setAudio(alarm.audio);
           setPackId(alarm.packId);
+          setTemplate(alarm.template || 'standard');
         }
       });
     }
@@ -53,22 +58,31 @@ export default function AlarmScreen() {
       packId,
       enabled: true,
       createdAt: new Date().toISOString(),
+      template,
     };
     await saveAlarm(alarm);
     await scheduleAlarm(alarm);
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
   }
 
   async function handleDelete() {
-    Alert.alert('Supprimer', 'Supprimer cette alarme ?', [
-      { text: 'Annuler', style: 'cancel' },
+    Alert.alert(t('alarm.delete'), t('alarm.delete_confirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Supprimer',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await cancelAlarm(id!);
           await deleteAlarm(id!);
-          router.back();
+          if (router.canGoBack()) {
+            router.back();
+          } else {
+            router.replace('/');
+          }
         },
       },
     ]);
@@ -82,12 +96,12 @@ export default function AlarmScreen() {
     >
       {/* Header */}
       <Text style={[styles.title, { color: colors.text }]}>
-        {isNew ? 'Nouvelle alarme' : "Modifier l'alarme"}
+        {isNew ? t('alarm.new_title') : t('alarm.edit_title')}
       </Text>
 
       {/* Name input - simple underline style */}
       <View style={styles.section}>
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>NOM</Text>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>{t('alarm.name_section')}</Text>
         <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
           <TextInput
             value={name}
@@ -100,30 +114,36 @@ export default function AlarmScreen() {
 
       {/* Interval */}
       <View style={styles.section}>
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>INTERVALLE</Text>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>{t('alarm.interval_section')}</Text>
         <IntervalPicker value={interval} onChange={setInterval} />
       </View>
 
       {/* Time */}
       <View style={styles.section}>
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>HORAIRES</Text>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>{t('alarm.time_section')}</Text>
         <View style={styles.timeRow}>
-          <TimePicker label="Debut" value={startTime} onChange={setStartTime} />
+          <TimePicker label={t('alarm.time_start')} value={startTime} onChange={setStartTime} />
           <Text style={[styles.timeSep, { color: colors.textMuted }]}>a</Text>
-          <TimePicker label="Fin" value={endTime} onChange={setEndTime} />
+          <TimePicker label={t('alarm.time_end')} value={endTime} onChange={setEndTime} />
         </View>
       </View>
 
       {/* Audio */}
       <View style={styles.section}>
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>SON</Text>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>{t('alarm.audio_section')}</Text>
         <AudioPicker value={audio} onChange={setAudio} />
       </View>
 
       {/* Pack */}
       <View style={styles.section}>
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>VERSETS</Text>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>{t('alarm.packs_section')}</Text>
         <PackPicker value={packId} onChange={setPackId} />
+      </View>
+
+      {/* Style */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>{t('alarm.style_section')}</Text>
+        <TemplatePicker value={template} onChange={setTemplate} />
       </View>
 
       {/* Save */}
@@ -132,7 +152,7 @@ export default function AlarmScreen() {
         style={[styles.saveButton, { backgroundColor: colors.primary }]}
       >
         <Text style={styles.saveText}>
-          {isNew ? "Creer l'alarme" : 'Enregistrer'}
+          {isNew ? t('alarm.save_new') : t('alarm.save_edit')}
         </Text>
       </Pressable>
 
@@ -140,7 +160,7 @@ export default function AlarmScreen() {
       {!isNew && (
         <Pressable onPress={handleDelete} style={styles.deleteButton}>
           <Text style={[styles.deleteText, { color: colors.danger }]}>
-            Supprimer l'alarme
+            {t('alarm.delete')}
           </Text>
         </Pressable>
       )}
@@ -183,15 +203,15 @@ const styles = StyleSheet.create({
   },
   timeRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    gap: Spacing.xxl,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
     paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
   },
   timeSep: {
     fontSize: FontSize.lg,
     fontWeight: '300',
-    marginBottom: Spacing.sm,
+    color: '#8E8E93',
   },
   saveButton: {
     marginHorizontal: Spacing.md,

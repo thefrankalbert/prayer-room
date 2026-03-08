@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useLanguage } from '../../src/contexts/LanguageContext';
 import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import {
   TIP_PRODUCTS,
@@ -23,6 +24,7 @@ import {
 
 export default function SettingsScreen() {
   const { mode, colors, toggleTheme } = useTheme();
+  const { t, language, setLanguage } = useLanguage();
   const insets = useSafeAreaInsets();
   const [iapReady, setIapReady] = useState(false);
   const [tips, setTips] = useState(TIP_PRODUCTS);
@@ -48,14 +50,14 @@ export default function SettingsScreen() {
   const handleTip = useCallback(
     async (productId: string, label: string) => {
       if (!iapReady) {
-        Alert.alert(label, 'Les achats integres ne sont pas encore disponibles. Merci pour votre generosite !');
+        Alert.alert(label, t('settings.iap_unavailable'));
         return;
       }
       setPurchasing(productId);
       const success = await purchaseTip(productId);
       setPurchasing(null);
       if (success) {
-        Alert.alert('Merci !', 'Votre soutien est une vraie benediction. Que Dieu vous benisse !');
+        Alert.alert('Merci !', t('settings.thank_you'));
       }
     },
     [iapReady],
@@ -67,16 +69,16 @@ export default function SettingsScreen() {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.lg }]}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={[styles.header, { color: colors.text }]}>Reglages</Text>
+      <Text style={[styles.header, { color: colors.text }]}>{t('settings.title')}</Text>
 
       {/* Appearance */}
-      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>APPARENCE</Text>
+      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('settings.appearance')}</Text>
       <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
         <View style={styles.row}>
-          <Text style={[styles.rowLabel, { color: colors.text }]}>Theme</Text>
+          <Text style={[styles.rowLabel, { color: colors.text }]}>{t('settings.theme')}</Text>
           <View style={styles.rowRight}>
             <Text style={[styles.rowValue, { color: colors.textSecondary }]}>
-              {mode === 'dark' ? 'Sombre' : 'Clair'}
+              {mode === 'dark' ? t('settings.theme_dark') : t('settings.theme_light')}
             </Text>
             <Switch
               value={mode === 'dark'}
@@ -88,17 +90,31 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      {/* Language */}
+      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('settings.language')}</Text>
+      <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <Pressable onPress={() => setLanguage('fr')} style={styles.row}>
+          <Text style={[styles.rowLabel, { color: colors.text }]}>{t('settings.language_fr')}</Text>
+          {language === 'fr' && <Text style={[styles.checkmark, { color: colors.primary }]}>{'\u2713'}</Text>}
+        </Pressable>
+        <View style={[styles.rowSeparator, { backgroundColor: colors.borderLight }]} />
+        <Pressable onPress={() => setLanguage('en')} style={styles.row}>
+          <Text style={[styles.rowLabel, { color: colors.text }]}>{t('settings.language_en')}</Text>
+          {language === 'en' && <Text style={[styles.checkmark, { color: colors.primary }]}>{'\u2713'}</Text>}
+        </Pressable>
+      </View>
+
       {/* Focus Mode */}
-      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>MODE FOCUS</Text>
+      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('settings.focus')}</Text>
       <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
         <Pressable
           onPress={() => Linking.openSettings()}
           style={styles.row}
         >
           <View style={styles.rowTextBlock}>
-            <Text style={[styles.rowLabel, { color: colors.text }]}>Configurer le Focus</Text>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>{t('settings.focus_configure')}</Text>
             <Text style={[styles.rowSubtext, { color: colors.textSecondary }]}>
-              Bloquer les notifications pendant la priere
+              {t('settings.focus_desc')}
             </Text>
           </View>
           <Text style={[styles.chevron, { color: colors.textMuted }]}>{'\u203A'}</Text>
@@ -106,7 +122,7 @@ export default function SettingsScreen() {
       </View>
 
       {/* Tips */}
-      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>SOUTIEN</Text>
+      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('settings.support')}</Text>
       <View style={styles.tipsRow}>
         {tips.map((tip) => (
           <Pressable
@@ -139,16 +155,16 @@ export default function SettingsScreen() {
       </View>
 
       {/* About */}
-      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>A PROPOS</Text>
+      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('settings.about')}</Text>
       <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
         <View style={styles.row}>
-          <Text style={[styles.rowLabel, { color: colors.text }]}>Version</Text>
+          <Text style={[styles.rowLabel, { color: colors.text }]}>{t('settings.version')}</Text>
           <Text style={[styles.rowValue, { color: colors.textSecondary }]}>1.0.0</Text>
         </View>
         <View style={[styles.rowSeparator, { backgroundColor: colors.borderLight }]} />
         <View style={styles.row}>
           <Text style={[styles.rowLabel, { color: colors.textMuted }]}>
-            Fait avec amour pour la communaute
+            {t('settings.made_with_love')}
           </Text>
         </View>
       </View>
@@ -243,6 +259,10 @@ const styles = StyleSheet.create({
   tipPrice: {
     fontSize: FontSize.sm,
     fontWeight: '600',
+  },
+  checkmark: {
+    fontSize: FontSize.lg,
+    fontWeight: '500',
   },
   bottomSpacer: {
     height: Spacing.xl,

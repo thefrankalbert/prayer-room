@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../src/contexts/ThemeContext';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 import { VersePack, Verse } from '../../../src/types';
 import { getAllPacks, saveCustomPack } from '../../../src/storage/packs';
 import { Spacing, FontSize, BorderRadius } from '../../../src/constants/theme';
@@ -10,6 +11,7 @@ import { Spacing, FontSize, BorderRadius } from '../../../src/constants/theme';
 export default function CreatePackScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const { editId } = useLocalSearchParams<{ editId?: string }>();
 
@@ -38,7 +40,7 @@ export default function CreatePackScreen() {
     const ref = newReference.trim();
     const txt = newText.trim();
     if (!ref || !txt) {
-      Alert.alert('Champs requis', 'Veuillez remplir la reference et le texte du verset.');
+      Alert.alert(t('common.required_fields'), t('common.required_fields'));
       return;
     }
     setVerses((prev) => [...prev, { reference: ref, text: txt }]);
@@ -53,7 +55,7 @@ export default function CreatePackScreen() {
   async function handleSave() {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      Alert.alert('Nom requis', 'Veuillez donner un nom au pack.');
+      Alert.alert(t('common.required_fields'), t('common.name_required'));
       return;
     }
 
@@ -78,28 +80,28 @@ export default function CreatePackScreen() {
       showsVerticalScrollIndicator={false}
     >
       <Text style={[styles.title, { color: colors.text }]}>
-        {existingId ? 'Modifier le pack' : 'Nouveau pack'}
+        {existingId ? t('packs.edit') : t('packs.new')}
       </Text>
 
       {/* Name & Description grouped */}
       <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
         <View style={styles.inputRow}>
-          <Text style={[styles.inputLabel, { color: colors.textMuted }]}>Nom</Text>
+          <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('packs.name_label')}</Text>
           <TextInput
             value={name}
             onChangeText={setName}
-            placeholder="Ex: Mes versets preferes"
+            placeholder={t('packs.name_placeholder')}
             style={[styles.inputField, { color: colors.text }]}
             placeholderTextColor={colors.textMuted}
           />
         </View>
         <View style={[styles.rowSeparator, { backgroundColor: colors.borderLight }]} />
         <View style={styles.inputRow}>
-          <Text style={[styles.inputLabel, { color: colors.textMuted }]}>Description</Text>
+          <Text style={[styles.inputLabel, { color: colors.textMuted }]}>{t('packs.desc_label')}</Text>
           <TextInput
             value={description}
             onChangeText={setDescription}
-            placeholder="Courte description"
+            placeholder={t('packs.desc_placeholder')}
             multiline
             style={[styles.inputField, { color: colors.text }]}
             placeholderTextColor={colors.textMuted}
@@ -108,13 +110,13 @@ export default function CreatePackScreen() {
       </View>
 
       {/* Add verse */}
-      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>AJOUTER UN VERSET</Text>
+      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('packs.add_verse_section')}</Text>
       <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
         <View style={styles.inputRow}>
           <TextInput
             value={newReference}
             onChangeText={setNewReference}
-            placeholder="Reference (ex: Jean 3:16)"
+            placeholder={t('packs.ref_placeholder')}
             style={[styles.inputField, { color: colors.text }]}
             placeholderTextColor={colors.textMuted}
           />
@@ -124,7 +126,7 @@ export default function CreatePackScreen() {
           <TextInput
             value={newText}
             onChangeText={setNewText}
-            placeholder="Texte du verset"
+            placeholder={t('packs.text_placeholder')}
             multiline
             style={[styles.inputField, styles.textArea, { color: colors.text }]}
             placeholderTextColor={colors.textMuted}
@@ -132,7 +134,7 @@ export default function CreatePackScreen() {
         </View>
         <View style={[styles.rowSeparator, { backgroundColor: colors.borderLight }]} />
         <Pressable onPress={handleAddVerse} style={styles.addRow}>
-          <Text style={[styles.addRowText, { color: colors.primary }]}>Ajouter</Text>
+          <Text style={[styles.addRowText, { color: colors.primary }]}>{t('packs.add')}</Text>
         </Pressable>
       </View>
 
@@ -140,7 +142,7 @@ export default function CreatePackScreen() {
       {verses.length > 0 && (
         <>
           <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>
-            VERSETS ({verses.length})
+            {t('packs.verses_section')} ({verses.length})
           </Text>
           <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
             {verses.map((verse, index) => (
@@ -172,7 +174,7 @@ export default function CreatePackScreen() {
         style={[styles.saveButton, { backgroundColor: colors.primary }]}
       >
         <Text style={styles.saveText}>
-          {existingId ? 'Enregistrer' : 'Creer le pack'}
+          {existingId ? t('packs.save_edit') : t('packs.save_new')}
         </Text>
       </Pressable>
     </ScrollView>

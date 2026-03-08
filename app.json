@@ -3,13 +3,13 @@
     "name": "Prayer Room",
     "slug": "prayer-room",
     "scheme": "prayerroom",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "platforms": [
       "ios"
     ],
     "icon": "./assets/icon.png",
     "splash": {
-      "backgroundColor": "#1a1a2e"
+      "backgroundColor": "#000000"
     },
     "ios": {
       "bundleIdentifier": "com.prayerroom.app",
@@ -19,7 +19,7 @@
       "expo-router",
       "expo-notifications",
       "expo-document-picker",
-      "react-native-iap"
+      "expo-localization"
     ],
     "extra": {
       "eas": {

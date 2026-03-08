@@ -5,6 +5,7 @@ import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useLanguage } from '../../src/contexts/LanguageContext';
 import { Alarm, Verse } from '../../src/types';
 import { getAlarms, saveAlarm } from '../../src/storage/alarms';
 import { getAllPacks } from '../../src/storage/packs';
@@ -15,6 +16,7 @@ import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 
 export default function HomeScreen() {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [alarms, setAlarms] = useState<Alarm[]>([]);
@@ -60,7 +62,7 @@ export default function HomeScreen() {
           <>
             {/* Minimal header */}
             <View style={styles.header}>
-              <Text style={[styles.title, { color: colors.text }]}>Prayer Room</Text>
+              <Text style={[styles.title, { color: colors.text }]}>{t('home.title')}</Text>
               <Pressable
                 onPress={() => router.push('/alarm/new')}
                 style={[styles.addBtn, { backgroundColor: colors.primary }]}
@@ -82,7 +84,7 @@ export default function HomeScreen() {
                 </>
               ) : (
                 <Text style={[styles.versePlaceholder, { color: colors.textMuted }]}>
-                  Votre verset du jour apparaitra ici.
+                  {t('home.verse_placeholder')}
                 </Text>
               )}
             </View>
@@ -92,7 +94,7 @@ export default function HomeScreen() {
 
             {/* Alarms header */}
             <View style={styles.alarmsHeader}>
-              <Text style={[styles.alarmsTitle, { color: colors.text }]}>Alarmes</Text>
+              <Text style={[styles.alarmsTitle, { color: colors.text }]}>{t('home.alarms')}</Text>
               {alarms.length > 0 && (
                 <Text style={[styles.alarmsCount, { color: colors.textMuted }]}>
                   {alarms.filter(a => a.enabled).length}/{alarms.length}
@@ -108,7 +110,7 @@ export default function HomeScreen() {
           >
             <Ionicons name="add-circle-outline" size={28} color={colors.textMuted} />
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              Ajouter votre premiere alarme
+              {t('home.add_first_alarm')}
             </Text>
           </Pressable>
         }

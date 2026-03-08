@@ -11,25 +11,26 @@ try {
 
 let currentSound: any = null;
 
+function getNativeAudioFile(soundId: string): any | null {
+  const NATIVE_FILES: Record<string, any> = {};
+  try { NATIVE_FILES['default'] = require('../../assets/audio/default.mp3'); } catch {}
+  try { NATIVE_FILES['tri-tone'] = require('../../assets/audio/tri-tone.mp3'); } catch {}
+  try { NATIVE_FILES['bell'] = require('../../assets/audio/bell.mp3'); } catch {}
+  try { NATIVE_FILES['chime'] = require('../../assets/audio/chime.mp3'); } catch {}
+  try { NATIVE_FILES['harp'] = require('../../assets/audio/harp.mp3'); } catch {}
+  try { NATIVE_FILES['shofar'] = require('../../assets/audio/shofar.mp3'); } catch {}
+  try { NATIVE_FILES['gentle-ping'] = require('../../assets/audio/gentle-ping.mp3'); } catch {}
+  return NATIVE_FILES[soundId] ?? null;
+}
+
 function getBuiltinAudioFile(trackId: string): any | null {
-  try {
-    switch (trackId) {
-      case 'worship-piano-1':
-        return require('../../assets/audio/worship-piano-1.mp3');
-      case 'worship-piano-2':
-        return require('../../assets/audio/worship-piano-2.mp3');
-      case 'gentle-worship':
-        return require('../../assets/audio/gentle-worship.mp3');
-      case 'prayer-ambient':
-        return require('../../assets/audio/prayer-ambient.mp3');
-      case 'meditation-calm':
-        return require('../../assets/audio/meditation-calm.mp3');
-      default:
-        return null;
-    }
-  } catch {
-    return null;
-  }
+  const AUDIO_FILES: Record<string, any> = {};
+  try { AUDIO_FILES['worship-piano-1'] = require('../../assets/audio/worship-piano-1.mp3'); } catch {}
+  try { AUDIO_FILES['worship-piano-2'] = require('../../assets/audio/worship-piano-2.mp3'); } catch {}
+  try { AUDIO_FILES['gentle-worship'] = require('../../assets/audio/gentle-worship.mp3'); } catch {}
+  try { AUDIO_FILES['prayer-ambient'] = require('../../assets/audio/prayer-ambient.mp3'); } catch {}
+  try { AUDIO_FILES['meditation-calm'] = require('../../assets/audio/meditation-calm.mp3'); } catch {}
+  return AUDIO_FILES[trackId] ?? null;
 }
 
 export async function playAudio(source: AudioSource): Promise<void> {
@@ -49,8 +50,15 @@ export async function playAudio(source: AudioSource): Promise<void> {
   let sound: any;
 
   switch (source.type) {
-    case 'native':
-      return;
+    case 'native': {
+      const nativeFile = getNativeAudioFile(source.soundId);
+      if (!nativeFile) return;
+      try {
+        const result = await Audio.Sound.createAsync(nativeFile);
+        sound = result.sound;
+      } catch { return; }
+      break;
+    }
     case 'builtin': {
       const file = getBuiltinAudioFile(source.trackId);
       if (!file) return;
@@ -85,10 +93,13 @@ export async function stopAudio(): Promise<void> {
 
 export async function getAudioDuration(source: AudioSource): Promise<number> {
   const DEFAULT_DURATION = 30000;
-  if (!Audio || source.type === 'native') return DEFAULT_DURATION;
+  if (!Audio) return DEFAULT_DURATION;
 
   let soundFile: any;
-  if (source.type === 'builtin') {
+  if (source.type === 'native') {
+    soundFile = getNativeAudioFile(source.soundId);
+    if (!soundFile) return DEFAULT_DURATION;
+  } else if (source.type === 'builtin') {
     soundFile = getBuiltinAudioFile(source.trackId);
     if (!soundFile) return DEFAULT_DURATION;
   } else {

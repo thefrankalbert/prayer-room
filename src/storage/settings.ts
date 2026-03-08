@@ -5,6 +5,7 @@ const SETTINGS_KEY = 'prayer_room_settings';
 
 const DEFAULT_SETTINGS: Settings = {
   theme: 'dark',
+  language: 'fr',
   lastVerseIndex: {},
 };
 
