@@ -15,7 +15,7 @@ import { TemplatePicker } from '../../src/components/TemplatePicker';
 import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 
 export default function AlarmScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, packId: preselectedPackId } = useLocalSearchParams<{ id: string; packId?: string }>();
   const router = useRouter();
   const { colors } = useTheme();
   const { t } = useLanguage();
@@ -27,7 +27,7 @@ export default function AlarmScreen() {
   const [startTime, setStartTime] = useState('06:00');
   const [endTime, setEndTime] = useState('22:00');
   const [audio, setAudio] = useState<AudioSource>({ type: 'native', soundId: 'default', name: 'audio.default' });
-  const [packId, setPackId] = useState('healing');
+  const [packId, setPackId] = useState(preselectedPackId || 'healing');
   const [template, setTemplate] = useState<AlarmTemplate>('standard');
   const [originalCreatedAt, setOriginalCreatedAt] = useState<string | null>(null);
 

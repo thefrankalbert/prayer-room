@@ -1,12 +1,15 @@
-import { View, Text, FlatList, StyleSheet, Pressable, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Pressable, Alert, Share } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/contexts/ThemeContext';
 import { useLanguage } from '../../../src/contexts/LanguageContext';
 import { VersePack, Verse } from '../../../src/types';
 import { getAllPacks, saveCustomPack, deleteCustomPack } from '../../../src/storage/packs';
+import { getAlarms, saveAlarm } from '../../../src/storage/alarms';
+import { scheduleAlarm } from '../../../src/services/notifications';
 import { Spacing, FontSize, BorderRadius } from '../../../src/constants/theme';
 
 export default function PackDetailScreen() {
@@ -16,6 +19,7 @@ export default function PackDetailScreen() {
   const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const [pack, setPack] = useState<VersePack | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const isCustom = pack ? !pack.isBuiltin && !pack.isDownloaded : false;
 
@@ -25,8 +29,32 @@ export default function PackDetailScreen() {
         const found = packs.find((p) => p.id === id);
         setPack(found ?? null);
       });
-    }, [id])
+    }, [id, language])
   );
+
+  function handleVersePress(verse: Verse, index: number) {
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+    // Show action sheet
+    Alert.alert(
+      verse.reference,
+      verse.text,
+      [
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: language === 'fr' ? 'Partager' : 'Share',
+          onPress: () => {
+            Share.share({
+              message: `${verse.text}\n\n— ${verse.reference}`,
+            });
+          },
+        },
+      ]
+    );
+  }
 
   function handleDeleteVerse(index: number) {
     if (!pack || !isCustom) return;
@@ -47,6 +75,44 @@ export default function PackDetailScreen() {
     ]);
   }
 
+  async function handleUsePack() {
+    if (!pack) return;
+    const alarms = await getAlarms();
+
+    if (alarms.length === 0) {
+      // Go create a new alarm with this pack pre-selected
+      router.push(`/alarm/new?packId=${pack.id}`);
+      return;
+    }
+
+    // Show alarm picker
+    Alert.alert(
+      language === 'fr' ? 'Assigner à une alarme' : 'Assign to alarm',
+      language === 'fr' ? 'Choisir l\'alarme qui utilisera ce pack' : 'Choose the alarm to use this pack',
+      [
+        ...alarms.map((alarm) => ({
+          text: alarm.name,
+          onPress: async () => {
+            const updated = { ...alarm, packId: pack.id };
+            await saveAlarm(updated);
+            await scheduleAlarm(updated);
+            Alert.alert(
+              '✓',
+              language === 'fr'
+                ? `"${pack.name}" assigné à "${alarm.name}"`
+                : `"${pack.name}" assigned to "${alarm.name}"`
+            );
+          },
+        })),
+        {
+          text: language === 'fr' ? 'Nouvelle alarme' : 'New alarm',
+          onPress: () => router.push(`/alarm/new?packId=${pack.id}`),
+        },
+        { text: t('common.cancel'), style: 'cancel' as const },
+      ]
+    );
+  }
+
   function handleDeletePack() {
     if (!pack) return;
     Alert.alert(t('packs.delete'), t('packs.delete_confirm', { name: pack.name }), [
@@ -62,23 +128,26 @@ export default function PackDetailScreen() {
     ]);
   }
 
+  // Filter out verses with empty or truncated text (< 10 chars usually means bad data)
+  const validVerses = pack?.verses.filter((v) => v.text.length >= 10 && v.reference.length > 0) || [];
+
   function renderVerse({ item, index }: { item: Verse; index: number }) {
     return (
       <Pressable
+        onPress={() => handleVersePress(item, index)}
         onLongPress={() => isCustom && handleDeleteVerse(index)}
         style={styles.verseItem}
       >
         <View style={[styles.verseAccent, { backgroundColor: colors.primary }]} />
         <View style={styles.verseBody}>
-          <Text style={[styles.verseReference, { color: colors.text }]}>{item.reference}</Text>
-          <Text style={[styles.verseText, { color: colors.textSecondary }]}>{item.text}</Text>
+          <Text style={[styles.verseReference, { color: colors.primary }]}>{item.reference}</Text>
+          <Text style={[styles.verseText, { color: colors.textSecondary }]} numberOfLines={4}>
+            {item.text}
+          </Text>
         </View>
+        <Ionicons name="ellipsis-horizontal" size={16} color={colors.textMuted} style={styles.moreIcon} />
       </Pressable>
     );
-  }
-
-  function renderSeparator() {
-    return <View style={[styles.separator, { backgroundColor: colors.borderLight }]} />;
   }
 
   if (!pack) {
@@ -92,31 +161,39 @@ export default function PackDetailScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + Spacing.lg }]}>
-      {/* Title area */}
-      <View style={styles.headerSection}>
-        <Text style={[styles.title, { color: colors.text }]}>{pack.name}</Text>
-        <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-          {t('packs.verses_count', { count: pack.verses.length })}
-        </Text>
-      </View>
-
-      {/* Verse list */}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
-        data={pack.verses}
+        data={validVerses}
         keyExtractor={(_, index) => index.toString()}
         renderItem={renderVerse}
-        ItemSeparatorComponent={renderSeparator}
-        contentContainerStyle={styles.list}
+        ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.borderLight }]} />}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 160, paddingHorizontal: Spacing.lg }}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View style={[styles.headerSection, { paddingTop: insets.top + Spacing.lg }]}>
+            {/* Back button */}
+            <Pressable onPress={() => router.back()} style={styles.backBtn}>
+              <Ionicons name="chevron-back" size={24} color={colors.text} />
+            </Pressable>
+            {/* Pack info */}
+            <Text style={[styles.title, { color: colors.text }]}>{pack.name}</Text>
+            <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+              {t('packs.verses_count', { count: validVerses.length })}
+            </Text>
+            {pack.description ? (
+              <Text style={[styles.description, { color: colors.textSecondary }]}>{pack.description}</Text>
+            ) : null}
+          </View>
+        }
         ListFooterComponent={
           isCustom ? (
             <View style={styles.footer}>
               <Pressable
                 onPress={() => router.push(`/(tabs)/packs/create?editId=${pack.id}`)}
-                style={[styles.addButton, { backgroundColor: colors.primary }]}
+                style={[styles.outlineButton, { borderColor: colors.primary }]}
               >
-                <Text style={styles.addButtonText}>{t('packs.add_verse_btn')}</Text>
+                <Ionicons name="add" size={18} color={colors.primary} />
+                <Text style={[styles.outlineButtonText, { color: colors.primary }]}>{t('packs.add_verse_btn')}</Text>
               </Pressable>
               <Pressable onPress={handleDeletePack} style={styles.deleteButton}>
                 <Text style={[styles.deleteText, { color: colors.danger }]}>
@@ -127,6 +204,14 @@ export default function PackDetailScreen() {
           ) : null
         }
       />
+
+      {/* FAB — Use this pack */}
+      <Pressable
+        onPress={handleUsePack}
+        style={[styles.fab, { backgroundColor: colors.primary, bottom: insets.bottom + 90 }]}
+      >
+        <Ionicons name="alarm-outline" size={22} color="#000" />
+      </Pressable>
     </View>
   );
 }
@@ -134,8 +219,12 @@ export default function PackDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   headerSection: {
-    paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  backBtn: {
+    marginBottom: Spacing.md,
+    padding: Spacing.xs,
+    alignSelf: 'flex-start',
   },
   title: {
     fontSize: FontSize.title,
@@ -146,18 +235,21 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     letterSpacing: 0.5,
   },
-  list: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+  description: {
+    fontSize: FontSize.sm,
+    marginTop: Spacing.sm,
+    lineHeight: 20,
   },
   verseItem: {
     flexDirection: 'row',
     paddingVertical: Spacing.md,
+    alignItems: 'flex-start',
   },
   verseAccent: {
-    width: 2,
-    borderRadius: 1,
+    width: 2.5,
+    borderRadius: 1.25,
     marginRight: Spacing.md,
+    alignSelf: 'stretch',
   },
   verseBody: {
     flex: 1,
@@ -171,9 +263,13 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     lineHeight: 22,
   },
+  moreIcon: {
+    paddingTop: 4,
+    paddingLeft: Spacing.sm,
+  },
   separator: {
     height: 0.33,
-    marginLeft: 2 + Spacing.md,
+    marginLeft: 2.5 + Spacing.md,
   },
   loadingText: {
     textAlign: 'center',
@@ -185,15 +281,18 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     paddingBottom: Spacing.lg,
   },
-  addButton: {
+  outlineButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
-    alignItems: 'center',
+    borderWidth: 1,
   },
-  addButtonText: {
+  outlineButtonText: {
     fontSize: FontSize.md,
     fontWeight: '600',
-    color: '#000000',
   },
   deleteButton: {
     padding: Spacing.md,
@@ -202,5 +301,19 @@ const styles = StyleSheet.create({
   deleteText: {
     fontSize: FontSize.sm,
     fontWeight: '400',
+  },
+  fab: {
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
