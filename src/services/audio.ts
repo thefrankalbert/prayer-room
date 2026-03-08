@@ -13,23 +13,23 @@ let currentSound: any = null;
 
 function getNativeAudioFile(soundId: string): any | null {
   const NATIVE_FILES: Record<string, any> = {};
-  try { NATIVE_FILES['default'] = require('../../assets/audio/default.mp3'); } catch {}
-  try { NATIVE_FILES['tri-tone'] = require('../../assets/audio/tri-tone.mp3'); } catch {}
-  try { NATIVE_FILES['bell'] = require('../../assets/audio/bell.mp3'); } catch {}
-  try { NATIVE_FILES['chime'] = require('../../assets/audio/chime.mp3'); } catch {}
-  try { NATIVE_FILES['harp'] = require('../../assets/audio/harp.mp3'); } catch {}
-  try { NATIVE_FILES['shofar'] = require('../../assets/audio/shofar.mp3'); } catch {}
-  try { NATIVE_FILES['gentle-ping'] = require('../../assets/audio/gentle-ping.mp3'); } catch {}
+  try { NATIVE_FILES['default'] = require('../../assets/audio/default.wav'); } catch {}
+  try { NATIVE_FILES['tri-tone'] = require('../../assets/audio/tri-tone.wav'); } catch {}
+  try { NATIVE_FILES['bell'] = require('../../assets/audio/bell.wav'); } catch {}
+  try { NATIVE_FILES['chime'] = require('../../assets/audio/chime.wav'); } catch {}
+  try { NATIVE_FILES['harp'] = require('../../assets/audio/harp.wav'); } catch {}
+  try { NATIVE_FILES['shofar'] = require('../../assets/audio/shofar.wav'); } catch {}
+  try { NATIVE_FILES['gentle-ping'] = require('../../assets/audio/gentle-ping.wav'); } catch {}
   return NATIVE_FILES[soundId] ?? null;
 }
 
 function getBuiltinAudioFile(trackId: string): any | null {
   const AUDIO_FILES: Record<string, any> = {};
-  try { AUDIO_FILES['worship-piano-1'] = require('../../assets/audio/worship-piano-1.mp3'); } catch {}
-  try { AUDIO_FILES['worship-piano-2'] = require('../../assets/audio/worship-piano-2.mp3'); } catch {}
-  try { AUDIO_FILES['gentle-worship'] = require('../../assets/audio/gentle-worship.mp3'); } catch {}
-  try { AUDIO_FILES['prayer-ambient'] = require('../../assets/audio/prayer-ambient.mp3'); } catch {}
-  try { AUDIO_FILES['meditation-calm'] = require('../../assets/audio/meditation-calm.mp3'); } catch {}
+  try { AUDIO_FILES['worship-piano-1'] = require('../../assets/audio/worship-piano-1.wav'); } catch {}
+  try { AUDIO_FILES['worship-piano-2'] = require('../../assets/audio/worship-piano-2.wav'); } catch {}
+  try { AUDIO_FILES['gentle-worship'] = require('../../assets/audio/gentle-worship.wav'); } catch {}
+  try { AUDIO_FILES['prayer-ambient'] = require('../../assets/audio/prayer-ambient.wav'); } catch {}
+  try { AUDIO_FILES['meditation-calm'] = require('../../assets/audio/meditation-calm.wav'); } catch {}
   return AUDIO_FILES[trackId] ?? null;
 }
 
